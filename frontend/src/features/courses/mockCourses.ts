@@ -1,33 +1,35 @@
-import { Router, Request, Response } from 'express';
-
-const router = Router();
-
-type CourseContent = {
+export interface CourseContentItem {
   id: string;
   type: 'heading' | 'text' | 'image' | 'video';
   content: string;
   order: number;
-};
+}
 
-type Quiz = {
+export interface QuizOption {
+  id: string;
+  text: string;
+  order: number;
+}
+
+export interface QuizItem {
   id: string;
   courseId: string;
   question: string;
   type: 'multiple-choice' | 'true-false';
-  options: Array<{ id: string; text: string; order: number }>;
+  options: QuizOption[];
   correctAnswer: string;
   order: number;
-};
+}
 
-type Course = {
+export interface CourseSummary {
   id: string;
   title: string;
   description: string;
-  content: CourseContent[];
-  quizzes: Quiz[];
-};
+  content: CourseContentItem[];
+  quizzes: QuizItem[];
+}
 
-const sampleCourses: Course[] = [
+export const mockCourses: CourseSummary[] = [
   {
     id: 'course-1',
     title: 'Introduction to Compliance',
@@ -103,57 +105,3 @@ const sampleCourses: Course[] = [
     ]
   }
 ];
-
-// GET /api/v1/courses
-router.get('/', (req: Request, res: Response) => {
-  const page = Number(req.query.page || 1);
-  const pageSize = Number(req.query.pageSize || 20);
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
-  const pagedCourses = sampleCourses.slice(start, end);
-
-  res.json({
-    success: true,
-    data: {
-      courses: pagedCourses,
-      total: sampleCourses.length,
-      page,
-      pageSize,
-      hasMore: end < sampleCourses.length
-    }
-  });
-});
-
-// GET /api/v1/courses/:id
-router.get('/:id', (req: Request, res: Response) => {
-  const course = sampleCourses.find((item) => item.id === req.params.id);
-
-  if (!course) {
-    return res.status(404).json({
-      success: false,
-      error: {
-        code: 'COURSE_NOT_FOUND',
-        message: 'Course not found'
-      }
-    });
-  }
-
-  res.json({
-    success: true,
-    data: course
-  });
-});
-
-// POST /api/v1/courses
-router.post('/', (req: Request, res: Response) => {
-  res.status(201).json({
-    success: true,
-    data: {
-      id: 'course-id',
-      title: req.body.title,
-      message: 'Course created successfully'
-    }
-  });
-});
-
-export default router;

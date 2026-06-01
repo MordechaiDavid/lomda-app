@@ -27,7 +27,8 @@
     "docker:logs": "docker-compose logs -f"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "typescript": "^6.0.3"
   },
   "engines": {
     "node": ">=18.0.0",
