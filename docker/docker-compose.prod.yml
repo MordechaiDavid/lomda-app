@@ -1,0 +1,123 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: lomda-postgres-prod
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - /backups:/backups
+    networks:
+      - lomda-network-prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    profiles:
+      - prod
+
+  # Redis Cache & Message Queue
+  redis:
+    image: redis:7-alpine
+    container_name: lomda-redis-prod
+    volumes:
+      - redis_data_prod:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - lomda-network-prod
+    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    profiles:
+      - prod
+
+  # Backend API
+  backend:
+    image: lomda/backend:latest
+    container_name: lomda-backend-prod
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      MAGIC_LINK_SECRET: ${MAGIC_LINK_SECRET}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      LOG_LEVEL: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - lomda-network-prod
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - prod
+
+  # Frontend Web App
+  frontend:
+    image: lomda/frontend:latest
+    container_name: lomda-frontend-prod
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME}
+      NEXT_PUBLIC_DEFAULT_LANGUAGE: ${NEXT_PUBLIC_DEFAULT_LANGUAGE}
+    depends_on:
+      - backend
+    networks:
+      - lomda-network-prod
+    restart: always
+    profiles:
+      - prod
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: lomda-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - lomda-network-prod
+    restart: always
+    profiles:
+      - prod
+
+networks:
+  lomda-network-prod:
+    driver: bridge
+
+volumes:
+  postgres_data_prod:
+  redis_data_prod:

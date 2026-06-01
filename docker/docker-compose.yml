@@ -1,0 +1,119 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: lomda-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-lomda_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change_me}
+      POSTGRES_DB: ${DB_NAME:-lomda_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lomda-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-lomda_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Message Queue
+  redis:
+    image: redis:7-alpine
+    container_name: lomda-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lomda-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend
+    container_name: lomda-backend
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-lomda_user}
+      DB_PASSWORD: ${DB_PASSWORD:-change_me}
+      DB_NAME: ${DB_NAME:-lomda_db}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your_super_secret_jwt_key}
+      MAGIC_LINK_SECRET: ${MAGIC_LINK_SECRET:-your_magic_link_secret}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-sendgrid}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - lomda-network
+    volumes:
+      - ../backend/src:/app/src
+      - /app/node_modules
+    command: npm run dev
+
+  # Frontend Web App
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    container_name: lomda-frontend
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Lomda}
+      NEXT_PUBLIC_DEFAULT_LANGUAGE: ${NEXT_PUBLIC_DEFAULT_LANGUAGE:-en}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - lomda-network
+    volumes:
+      - ../frontend/src:/app/src
+      - /app/node_modules
+    command: npm run dev
+
+  # PgAdmin for Database Management (Development Only)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: lomda-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@lomda.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - lomda-network
+    profiles:
+      - dev
+
+networks:
+  lomda-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
