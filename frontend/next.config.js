@@ -1,16 +1,19 @@
-import type { Config } from 'next';
-import { i18n } from './next-i18next.config';
-
-const config: Config = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  i18n,
   images: {
-    domains: ['localhost', 'api.example.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || 'Lomda',
   },
 };
 
-export default config;
+module.exports = nextConfig;
