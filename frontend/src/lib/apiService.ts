@@ -1,12 +1,18 @@
 // API service for making requests
 import axios, { AxiosInstance } from 'axios';
 
+function resolveApiBaseUrl() {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const normalizedUrl = envUrl.replace(/\/+$/, '');
+  return normalizedUrl.endsWith('/api/v1') ? normalizedUrl : `${normalizedUrl}/api/v1`;
+}
+
 class ApiService {
   private client: AxiosInstance;
 
   constructor() {
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
+      baseURL: resolveApiBaseUrl(),
       timeout: 10000,
     });
 
