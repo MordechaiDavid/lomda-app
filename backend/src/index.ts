@@ -6,16 +6,16 @@ import 'express-async-errors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 
-import { config } from './config';
-import { errorHandler } from './middleware/error.handler';
-import { requestLogger } from './middleware/logger.middleware';
+import { config } from './config/index.js';
+import { errorHandler } from './middleware/error.handler.js';
+import { requestLogger } from './middleware/logger.middleware.js';
 
 // Routes
-import authRoutes from './api/auth/routes';
-import courseRoutes from './api/courses/routes';
-import campaignRoutes from './api/campaigns/routes';
-import analyticsRoutes from './api/analytics/routes';
-import userRoutes from './api/users/routes';
+import authRoutes from './api/auth/routes.js';
+import courseRoutes from './api/courses/routes.js';
+import campaignRoutes from './api/campaigns/routes.js';
+import analyticsRoutes from './api/analytics/routes.js';
+import userRoutes from './api/users/routes.js';
 
 // Logger
 const logger = pino();

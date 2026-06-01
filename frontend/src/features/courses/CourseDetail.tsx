@@ -1,5 +1,7 @@
-import React from 'react';
-import { mockCourses } from './mockCourses';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { apiService } from '../../lib/apiService';
 
 interface CourseContentItem {
   id: string;
@@ -19,11 +21,31 @@ interface CourseDetailProps {
 }
 
 export default function CourseDetail({ courseId }: CourseDetailProps) {
-  const course = mockCourses.find((item) => item.id === courseId) ?? null;
+  const [course, setCourse] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!course) {
-    return <p className="text-center text-red-600">Course not found.</p>;
-  }
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const res = await apiService.getCourse(courseId);
+        if (mounted) setCourse(res.data.data);
+      } catch (e) {
+        if (mounted) setError('Course not found or an error occurred.');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [courseId]);
+
+  if (loading) return <p className="text-center text-gray-600">Loading course details...</p>;
+  if (error) return <p className="text-center text-red-600">{error}</p>;
+  if (!course) return <p className="text-center text-gray-600">Course details are unavailable.</p>;
 
   return (
     <div className="space-y-8">

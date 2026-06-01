@@ -57,6 +57,9 @@ export const config = {
     corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000'
   },
 
+  // Legacy top-level helpers
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+
   // Data Retention
   dataRetention: {
     magicTokenExpiryDays: parseInt(process.env.MAGIC_TOKEN_EXPIRY_DAYS || '1', 10),
