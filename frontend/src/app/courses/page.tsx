@@ -9,6 +9,8 @@ export default function CoursesPage() {
           <p className="mt-3 text-gray-600">
             Browse the learning library and select a course to review the content and quiz preview.
           </p>
+          <p className="mt-2 text-gray-600">  test </p>
+          
         </div>
 
         <CourseList />
