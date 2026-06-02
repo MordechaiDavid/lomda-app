@@ -4,18 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiService } from '../../lib/apiService';
 import 'react-quill/dist/quill.snow.css';
 
-interface CourseContentItem {
-  id: string;
-  type: 'heading' | 'text' | 'image' | 'video';
-  content: string;
-}
 
-interface QuizItem {
-  id: string;
-  question: string;
-  type: string;
-  options?: Array<{ id: string; text: string }>;
-}
 
 interface CourseDetailProps {
   courseId: string;
@@ -67,7 +56,7 @@ export default function CourseDetail({ courseId, course: initialCourse }: Course
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         <div className="space-y-6">
-          {course.content.map((item) => (
+          {course.content.map((item: any) => (
             <div key={item.id} className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
               {item.type === 'heading' && <h2 className="text-2xl font-semibold text-slate-900">{item.content}</h2>}
               {item.type === 'text' && (

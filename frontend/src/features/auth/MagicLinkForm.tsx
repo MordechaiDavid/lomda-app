@@ -35,7 +35,7 @@ export function MagicLinkForm({ onSuccess, onError }: MagicLinkFormProps) {
       <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
         <h3 className="text-lg font-semibold text-green-900 mb-2">Check your email</h3>
         <p className="text-green-800 mb-4">
-          We've sent a login link to <strong>{email}</strong>. Click the link to access the course.
+          We have sent a login link to <strong>{email}</strong>. Click the link to access the course.
         </p>
         <button
           onClick={() => setSent(false)}
@@ -70,7 +70,7 @@ export function MagicLinkForm({ onSuccess, onError }: MagicLinkFormProps) {
       </button>
 
       <p className="text-xs text-gray-500 text-center">
-        No password needed. We'll send you a secure link to sign in instantly.
+        No password needed. We will send you a secure link to sign in instantly.
       </p>
     </form>
   );
