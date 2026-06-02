@@ -68,9 +68,9 @@ app.use((req: Request, res: Response) => {
 app.use(errorHandler);
 
 // Start server
-const PORT = config.port || 3001;
+const PORT = config.port;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   logger.info(`🚀 Server running on port ${PORT}`);
 });
 
