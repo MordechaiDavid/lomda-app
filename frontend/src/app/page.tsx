@@ -12,7 +12,7 @@ export default function Home() {
           <Link href="/courses" className="rounded-full bg-blue-600 px-6 py-3 text-white text-lg font-semibold transition hover:bg-blue-700">
             Browse Courses
           </Link>
-          <Link href="/auth" className="rounded-full border border-blue-600 px-6 py-3 text-blue-600 text-lg font-semibold transition hover:bg-blue-50">
+          <Link href="/login" className="rounded-full border border-blue-600 px-6 py-3 text-blue-600 text-lg font-semibold transition hover:bg-blue-50">
             Sign In
           </Link>
         </div>
