@@ -45,13 +45,13 @@ router.get('/:id', (req: Request, res: Response) => {
 
 // POST /api/v1/courses
 router.post('/', (req: Request, res: Response) => {
+  const newCourse = req.body;
+  // Add to in-memory list
+  sampleCourses.unshift(newCourse);
+  
   res.status(201).json({
     success: true,
-    data: {
-      id: 'course-id',
-      title: req.body.title,
-      message: 'Course created successfully'
-    }
+    data: newCourse
   });
 });
 

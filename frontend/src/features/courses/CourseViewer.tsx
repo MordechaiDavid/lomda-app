@@ -37,7 +37,12 @@ export function CourseViewer({ courseId, content, onProgress }: CourseViewerProp
       case 'heading':
         return <h2 className="text-3xl font-bold">{currentContent.content}</h2>;
       case 'text':
-        return <p className="text-lg leading-relaxed">{currentContent.content}</p>;
+        return (
+          <div
+            className="text-lg leading-relaxed prose prose-sm max-w-none [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-bold [&_h3]:text-lg [&_h3]:font-semibold [&_strong]:font-bold [&_em]:italic [&_u]:underline [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:mb-2 [&_a]:text-blue-600 [&_a]:underline [&_code]:bg-gray-100 [&_code]:px-2 [&_code]:py-1 [&_code]:rounded"
+            dangerouslySetInnerHTML={{ __html: currentContent.content }}
+          />
+        );
       case 'image':
         return <img src={currentContent.content} alt="Course content" className="w-full" />;
       case 'video':
