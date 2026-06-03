@@ -5,11 +5,13 @@ on:
     branches: [main, staging]
     paths:
       - 'backend/**'
+      - 'shared/**'
       - '.github/workflows/ci-backend.yml'
   pull_request:
     branches: [main, staging]
     paths:
       - 'backend/**'
+      - 'shared/**'
       - '.github/workflows/ci-backend.yml'
 
 jobs:
@@ -19,13 +21,13 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build
         run: npm run build
