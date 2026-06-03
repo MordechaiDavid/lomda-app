@@ -24,10 +24,11 @@ const mockUsers: AuthUser[] = [
 
 const router = Router();
 
+const isProduction = config.nodeEnv === 'production';
 const cookieOptions = {
   httpOnly: true,
-  secure: config.nodeEnv === 'production',
-  sameSite: 'lax' as const,
+  secure: isProduction,
+  sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: '/'
 };
