@@ -23,7 +23,20 @@ const app: Express = express();
 
 app.use(helmet());
 app.use(compression());
-app.use(cors({ origin: config.corsOrigin, credentials: true }));
+const allowedOrigins = config.corsOrigin.split(',').map((o) => o.trim());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // allow requests with no origin (curl, Postman, server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origin ${origin} not allowed`));
+      }
+    },
+    credentials: true
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
