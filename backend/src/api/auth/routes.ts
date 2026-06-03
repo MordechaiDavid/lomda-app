@@ -16,7 +16,7 @@ const mockUsers: AuthUser[] = [
   {
     id: 'teacher-1',
     email: 'teacher@lms.com',
-    password: '$2a$10$sqffnMIdawjip3Sw57Fv6e4785Rhzv.skr85EiAicB1C/.kaWFcm.',
+    password: '$2a$10$y1/97jtwomJ1l8KzWuwnUeuYhGdvFR.59LAbHIidJH2QRwNvtpUrm',
     role: 'teacher',
     name: 'Lomda Teacher'
   }
@@ -145,7 +145,7 @@ router.get('/me', (req: Request, res: Response) => {
   }
 });
 
-router.post('/logout', (req: Request, res: Response) => {
+router.post('/logout', (_req: Request, res: Response) => {
   res.clearCookie('token', cookieOptions);
 
   return res.json({
@@ -156,7 +156,7 @@ router.post('/logout', (req: Request, res: Response) => {
   });
 });
 
-router.post('/magic-link', (req: Request, res: Response) => {
+router.post('/magic-link', (_req: Request, res: Response) => {
   res.json({
     success: true,
     data: {
@@ -165,7 +165,7 @@ router.post('/magic-link', (req: Request, res: Response) => {
   });
 });
 
-router.post('/verify-token', (req: Request, res: Response) => {
+router.post('/verify-token', (_req: Request, res: Response) => {
   res.json({
     success: true,
     data: {

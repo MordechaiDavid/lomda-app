@@ -10,7 +10,7 @@
     "start": "node dist/index.js",
     "db:migrate": "node --loader ts-node/esm scripts/migrate.ts",
     "db:seed": "node --loader ts-node/esm scripts/seed.ts",
-    "test": "vitest",
+    "test": "vitest run",
     "test:unit": "vitest --run unit",
     "test:integration": "vitest --run integration",
     "lint": "eslint src --ext .ts",
