@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
-import app from '../src/index.js';
+import app from '../src/app.js';
 
 // "describe" groups related tests — like a @Nested class in JUnit 5
 describe('GET /health', () => {

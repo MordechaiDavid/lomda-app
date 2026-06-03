@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
-import app from '../src/index.js';
+import app from '../src/app.js';
 
 const VALID_EMAIL = 'teacher@lms.com';
 const VALID_PASSWORD = 'password123';
