@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt, { type JwtPayload, type SignOptions } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 import { config } from '../../config/index.js';
+import { query } from '../../db/index.js';
 
 interface AuthUser {
   id: string;
@@ -11,16 +12,6 @@ interface AuthUser {
   role: string;
   name: string;
 }
-
-const mockUsers: AuthUser[] = [
-  {
-    id: 'teacher-1',
-    email: 'teacher@lms.com',
-    password: '$2a$10$y1/97jtwomJ1l8KzWuwnUeuYhGdvFR.59LAbHIidJH2QRwNvtpUrm',
-    role: 'teacher',
-    name: 'Lomda Teacher'
-  }
-];
 
 const router = Router();
 
@@ -40,7 +31,7 @@ const jwtSignOptions: SignOptions = {
 };
 
 function createJwtToken(user: AuthUser) {
-  return jwt.sign({ email: user.email, role: user.role }, jwtSecret, jwtSignOptions);
+  return jwt.sign({ id: user.id, email: user.email, role: user.role }, jwtSecret, jwtSignOptions);
 }
 
 function sanitizeUser(user: AuthUser) {
@@ -65,7 +56,11 @@ router.post('/login', async (req: Request, res: Response) => {
     });
   }
 
-  const user = mockUsers.find((u) => u.email.toLowerCase() === String(email).toLowerCase());
+  const result = await query<AuthUser>(
+    'SELECT id, email, password, role, name FROM users WHERE LOWER(email) = LOWER($1)',
+    [String(email)]
+  );
+  const user = result.rows[0];
 
   if (!user) {
     return res.status(401).json({
@@ -102,7 +97,7 @@ router.post('/login', async (req: Request, res: Response) => {
   });
 });
 
-router.get('/me', (req: Request, res: Response) => {
+router.get('/me', async (req: Request, res: Response) => {
   const token = req.cookies?.token;
 
   if (!token) {
@@ -116,8 +111,17 @@ router.get('/me', (req: Request, res: Response) => {
   }
 
   try {
-    const payload = jwt.verify(token, jwtSecret) as JwtPayload & { email: string; role: string };
-    const user = mockUsers.find((u) => u.email.toLowerCase() === payload.email.toLowerCase());
+    const payload = jwt.verify(token, jwtSecret) as JwtPayload & {
+      id: string;
+      email: string;
+      role: string;
+    };
+
+    const result = await query<AuthUser>(
+      'SELECT id, email, password, role, name FROM users WHERE id = $1',
+      [payload.id]
+    );
+    const user = result.rows[0];
 
     if (!user) {
       return res.status(401).json({

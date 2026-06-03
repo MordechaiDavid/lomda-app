@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --loader ts-node/esm --watch src/index.ts",
+    "debug": "node --inspect --loader ts-node/esm --enable-source-maps src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "db:migrate": "node --loader ts-node/esm scripts/migrate.ts",
@@ -51,6 +52,7 @@
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.10.6",
+    "@types/pg": "^8.20.0",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^6.17.0",

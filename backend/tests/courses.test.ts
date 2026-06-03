@@ -1,6 +1,60 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
 import app from '../src/app.js';
+
+const mockCourses = [
+  {
+    id: 'mock-course-1',
+    title: 'Introduction to Compliance',
+    description: 'Learn compliance basics.',
+    content: [],
+    quizzes: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: 'mock-course-2',
+    title: 'Data Privacy Essentials',
+    description: 'GDPR and privacy fundamentals.',
+    content: [],
+    quizzes: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+];
+
+vi.mock('../src/db/index.js', () => ({
+  query: vi.fn((sql: string, params?: unknown[]) => {
+    if (sql.includes('COUNT(*)')) {
+      return Promise.resolve({ rows: [{ count: String(mockCourses.length) }], rowCount: 1 });
+    }
+    if (sql.includes('SELECT * FROM courses ORDER BY')) {
+      const limit = (params?.[0] as number) ?? 20;
+      const offset = (params?.[1] as number) ?? 0;
+      const rows = mockCourses.slice(offset, offset + limit);
+      return Promise.resolve({ rows, rowCount: rows.length });
+    }
+    if (sql.includes('SELECT * FROM courses WHERE id')) {
+      const id = params?.[0] as string;
+      const rows = mockCourses.filter((c) => c.id === id);
+      return Promise.resolve({ rows, rowCount: rows.length });
+    }
+    if (sql.includes('INSERT INTO courses')) {
+      const created = {
+        id: 'new-uuid-1234',
+        title: params?.[0] as string,
+        description: params?.[1] as string,
+        content: [],
+        quizzes: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      return Promise.resolve({ rows: [created], rowCount: 1 });
+    }
+    return Promise.resolve({ rows: [], rowCount: 0 });
+  }),
+  pool: { end: vi.fn() }
+}));
 
 describe('Courses API', () => {
 
@@ -16,11 +70,10 @@ describe('Courses API', () => {
     });
 
     it('respects pageSize query param', async () => {
-      const res = await request(app).get('/api/v1/courses?pageSize=2');
+      const res = await request(app).get('/api/v1/courses?pageSize=1');
 
       expect(res.status).toBe(200);
-      // should return at most 2 courses
-      expect(res.body.data.courses.length).toBeLessThanOrEqual(2);
+      expect(res.body.data.courses.length).toBeLessThanOrEqual(1);
     });
 
     it('returns page 2 with different results than page 1', async () => {
@@ -29,7 +82,6 @@ describe('Courses API', () => {
 
       expect(page1.status).toBe(200);
       expect(page2.status).toBe(200);
-      // the first course on page 1 and page 2 should be different
       expect(page1.body.data.courses[0]?.id).not.toBe(page2.body.data.courses[0]?.id);
     });
   });
@@ -37,7 +89,6 @@ describe('Courses API', () => {
   describe('GET /api/v1/courses/:id', () => {
 
     it('returns 200 with the course when it exists', async () => {
-      // First get the list to find a real id
       const listRes = await request(app).get('/api/v1/courses');
       const firstId = listRes.body.data.courses[0]?.id;
 
@@ -60,19 +111,14 @@ describe('Courses API', () => {
   describe('POST /api/v1/courses', () => {
 
     it('returns 201 and the created course', async () => {
-      const newCourse = {
-        id: 'test-course-1',
-        title: 'Test Course',
-        description: 'A test course'
-      };
-
       const res = await request(app)
         .post('/api/v1/courses')
-        .send(newCourse);
+        .send({ title: 'Test Course', description: 'A test course' });
 
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
-      expect(res.body.data.id).toBe(newCourse.id);
+      expect(typeof res.body.data.id).toBe('string');
+      expect(res.body.data.title).toBe('Test Course');
     });
   });
 });

@@ -1,6 +1,31 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
 import app from '../src/app.js';
+
+const TEACHER_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+const TEACHER = {
+  id: TEACHER_ID,
+  email: 'teacher@lms.com',
+  // bcrypt hash of "password123"
+  password: '$2a$10$y1/97jtwomJ1l8KzWuwnUeuYhGdvFR.59LAbHIidJH2QRwNvtpUrm',
+  role: 'teacher',
+  name: 'Lomda Teacher'
+};
+
+vi.mock('../src/db/index.js', () => ({
+  query: vi.fn((sql: string, params?: unknown[]) => {
+    if (sql.includes('FROM users WHERE LOWER(email)')) {
+      const email = (params?.[0] as string)?.toLowerCase();
+      const rows = email === 'teacher@lms.com' ? [TEACHER] : [];
+      return Promise.resolve({ rows, rowCount: rows.length });
+    }
+    if (sql.includes('FROM users WHERE id')) {
+      return Promise.resolve({ rows: [TEACHER], rowCount: 1 });
+    }
+    return Promise.resolve({ rows: [], rowCount: 0 });
+  }),
+  pool: { end: vi.fn() }
+}));
 
 const VALID_EMAIL = 'teacher@lms.com';
 const VALID_PASSWORD = 'password123';
@@ -17,8 +42,7 @@ describe('Auth API', () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data.user.email).toBe(VALID_EMAIL);
-      expect(res.body.data.user.password).toBeUndefined(); // never leak the password
-      // cookie should be set
+      expect(res.body.data.user.password).toBeUndefined();
       expect(res.headers['set-cookie']).toBeDefined();
     });
 
@@ -44,7 +68,7 @@ describe('Auth API', () => {
     it('returns 400 when email or password is missing', async () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
-        .send({ email: VALID_EMAIL }); // no password
+        .send({ email: VALID_EMAIL });
 
       expect(res.status).toBe(400);
       expect(res.body.error.code).toBe('INVALID_REQUEST');
@@ -61,14 +85,12 @@ describe('Auth API', () => {
     });
 
     it('returns the logged-in user when a valid cookie is sent', async () => {
-      // First login to get the cookie — like @BeforeEach login in Spring Security tests
       const loginRes = await request(app)
         .post('/api/v1/auth/login')
         .send({ email: VALID_EMAIL, password: VALID_PASSWORD });
 
       const cookie = loginRes.headers['set-cookie'];
 
-      // Then use that cookie on /me
       const res = await request(app)
         .get('/api/v1/auth/me')
         .set('Cookie', cookie);

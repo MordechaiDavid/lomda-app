@@ -1,33 +1,51 @@
 import { Router, Request, Response } from 'express';
-import sampleCourses from '../../data/mockCourses.js';
+import { query } from '../../db/index.js';
+
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  content: unknown[];
+  quizzes: unknown[];
+  created_at: string;
+  updated_at: string;
+}
 
 const router = Router();
 
 // GET /api/v1/courses
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   const page = Number(req.query.page || 1);
   const pageSize = Number(req.query.pageSize || 20);
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
-  const pagedCourses = sampleCourses.slice(start, end);
+  const offset = (page - 1) * pageSize;
+
+  const [dataResult, countResult] = await Promise.all([
+    query<Course>(
+      'SELECT * FROM courses ORDER BY created_at DESC LIMIT $1 OFFSET $2',
+      [pageSize, offset]
+    ),
+    query<{ count: string }>('SELECT COUNT(*) FROM courses')
+  ]);
+
+  const total = parseInt(countResult.rows[0].count, 10);
 
   res.json({
     success: true,
     data: {
-      courses: pagedCourses,
-      total: sampleCourses.length,
+      courses: dataResult.rows,
+      total,
       page,
       pageSize,
-      hasMore: end < sampleCourses.length
+      hasMore: offset + dataResult.rows.length < total
     }
   });
 });
 
 // GET /api/v1/courses/:id
-router.get('/:id', (req: Request, res: Response) => {
-  const course = sampleCourses.find((item) => item.id === req.params.id);
+router.get('/:id', async (req: Request, res: Response) => {
+  const result = await query<Course>('SELECT * FROM courses WHERE id = $1', [req.params.id]);
 
-  if (!course) {
+  if (!result.rows[0]) {
     return res.status(404).json({
       success: false,
       error: {
@@ -39,19 +57,24 @@ router.get('/:id', (req: Request, res: Response) => {
 
   res.json({
     success: true,
-    data: course
+    data: result.rows[0]
   });
 });
 
 // POST /api/v1/courses
-router.post('/', (req: Request, res: Response) => {
-  const newCourse = req.body;
-  // Add to in-memory list
-  sampleCourses.unshift(newCourse);
-  
+router.post('/', async (req: Request, res: Response) => {
+  const { title, description, content = [], quizzes = [] } = req.body;
+
+  const result = await query<Course>(
+    `INSERT INTO courses (title, description, content, quizzes)
+     VALUES ($1, $2, $3, $4)
+     RETURNING *`,
+    [title, description, JSON.stringify(content), JSON.stringify(quizzes)]
+  );
+
   res.status(201).json({
     success: true,
-    data: newCourse
+    data: result.rows[0]
   });
 });
 
