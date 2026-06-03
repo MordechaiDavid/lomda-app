@@ -10,11 +10,6 @@ interface CourseListProps {
   onDelete?: (id: string) => void;
 }
 
-interface CourseSummary {
-  id: string;
-  title: string;
-  description: string;
-}
 
 export default function CourseList({ initialCourses = null, onEdit, onDelete }: CourseListProps) {
   const [courses, setCourses] = useState<any[] | null>(initialCourses);

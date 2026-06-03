@@ -14,25 +14,23 @@ class ApiService {
     this.client = axios.create({
       baseURL: resolveApiBaseUrl(),
       timeout: 10000,
+      withCredentials: true,
     });
 
-    // Add token to requests
-    this.client.interceptors.request.use((config) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    });
-
-    // Handle errors
+    // Handle API auth failures
     this.client.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401) {
-          localStorage.removeItem('token');
-          window.location.href = '/auth';
+        const status = error.response?.status;
+        const requestUrl = error.config?.url || '';
+
+        const authBypassPaths = ['/auth/login', '/auth/magic-link', '/auth/verify-token', '/auth/logout'];
+        const shouldBypassRedirect = authBypassPaths.some((path) => requestUrl.includes(path));
+
+        if (status === 401 && !shouldBypassRedirect) {
+          window.location.href = '/login';
         }
+
         return Promise.reject(error);
       }
     );
@@ -43,8 +41,20 @@ class ApiService {
     return this.client.post('/auth/magic-link', { email });
   }
 
+  login(email: string, password: string) {
+    return this.client.post('/auth/login', { email, password });
+  }
+
   verifyToken(token: string) {
     return this.client.post('/auth/verify-token', { token });
+  }
+
+  logout() {
+    return this.client.post('/auth/logout');
+  }
+
+  getCurrentUser() {
+    return this.client.get('/auth/me');
   }
 
   // Courses endpoints
@@ -85,11 +95,6 @@ class ApiService {
   // Analytics endpoints
   getDashboard() {
     return this.client.get('/analytics/dashboard');
-  }
-
-  // Users endpoints
-  getCurrentUser() {
-    return this.client.get('/users/me');
   }
 
   bulkUploadUsers(file: File) {

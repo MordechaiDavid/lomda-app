@@ -14,7 +14,7 @@ interface CourseViewerProps {
   onProgress: (step: number, progress: number) => void;
 }
 
-export function CourseViewer({ courseId, content, onProgress }: CourseViewerProps) {
+export function CourseViewer({ content, onProgress }: CourseViewerProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
   const handleNext = () => {
