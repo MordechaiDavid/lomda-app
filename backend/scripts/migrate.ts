@@ -24,13 +24,13 @@ async function migrate() {
     BEGIN
       IF NOT EXISTS (
         SELECT 1 FROM information_schema.columns
-        WHERE table_name='users' AND column_name='is_active'
+        WHERE table_name='courses' AND column_name='is_active'
       ) THEN
-        ALTER TABLE users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true;
+        ALTER TABLE courses ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true;
       END IF;
     END $$
   `);
-  console.log('✓ users.is_active column');
+  console.log('✓ courses.is_active column');
 
   await query(`
     CREATE TABLE IF NOT EXISTS courses (

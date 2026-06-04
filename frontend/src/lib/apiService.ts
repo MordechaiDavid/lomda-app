@@ -70,6 +70,10 @@ class ApiService {
     return this.client.post('/courses', data);
   }
 
+  deleteCourse(id: string){
+    return this.client.delete(`/courses/${id}`);
+  }
+
   // Enrollments endpoints
   getMyProgress() {
     return this.client.get('/enrollments/my-progress');

@@ -53,7 +53,11 @@ export default function CoursesPage() {
   }
 
   function handleDelete(id: string) {
-    setCourses((c) => c ? c.filter((course) => course.id !== id) : []);
+    apiService.deleteCourse(id).then(() => {
+      setCourses((c) => c ? c.filter((c) => c.id !== id) : []);
+    }).catch((err) => {
+      console.warn('Failed to delete course from backend:', err);
+    });
   }
 
   return (

@@ -48,12 +48,9 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
 
   async function handleDelete() {
     if (confirm('Delete this course?')) {
-      setDeleting(true);
       try {
-        // Simulate delete (in real app, call API endpoint to delete)
-        await new Promise(resolve => setTimeout(resolve, 300));
-        // Redirect after delete
-        window.location.href = '/courses';
+        apiService.deleteCourse(params.id);
+        setDeleting(true);
       } catch (err) {
         console.error('Failed to delete:', err);
         setDeleting(false);

@@ -78,4 +78,31 @@ router.post('/', async (req: Request, res: Response) => {
   });
 });
 
+router.delete('/:id', async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const result = await query(
+    `UPDATE courses SET is_active = false, updated_at = NOW() WHERE id = $1 RETURNING id`,
+    [id]
+  );
+
+  if (!result.rowCount || result.rowCount === 0) {
+    return res.status(404).json({
+      success: false,
+      error: {
+        code: 'COURSE_NOT_FOUND',
+        message: 'Course not found'
+      }
+    });
+  }
+
+  res.json({
+    success: true,
+    data: { message: 'Course deactivated.' }
+  });
+});
+
+
+
+
 export default router;
