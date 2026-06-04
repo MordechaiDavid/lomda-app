@@ -1,12 +1,15 @@
 import { query, pool } from '../src/db/index.js';
 
 // Fixed UUIDs so the seed is idempotent
-const TEACHER_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+const ADMIN_ID    = 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+const EMPLOYEE_ID = 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 const COURSE_1_ID = 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 const COURSE_2_ID = 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12';
 
-// bcrypt hash of "password123"
-const TEACHER_PASSWORD_HASH = '$2a$10$y1/97jtwomJ1l8KzWuwnUeuYhGdvFR.59LAbHIidJH2QRwNvtpUrm';
+// bcrypt hash of "Admin1234!"
+const ADMIN_PASSWORD_HASH = '$2a$10$1eevHUIy1MwphHwo4z6z2u/WB54q2IXISZslrPmIEpeD87EMfPhFW';
+// bcrypt hash of "Employee123!"
+const EMPLOYEE_PASSWORD_HASH = '$2a$10$qBbgD57ohVPX5uOKDKjoa.0zW0stUUGmYZhW8q3R5n3Ur/ty7SWwy';
 
 const courses = [
   {
@@ -82,10 +85,17 @@ async function seed() {
   console.log('Seeding database...');
 
   await query(
-    `INSERT INTO users (id, email, password, role, name)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO users (id, email, password, role, name, is_active)
+     VALUES ($1, $2, $3, 'admin', 'Lomda Admin', true)
      ON CONFLICT (email) DO NOTHING`,
-    [TEACHER_ID, 'teacher@lms.com', TEACHER_PASSWORD_HASH, 'teacher', 'Lomda Teacher']
+    [ADMIN_ID, 'admin@lomda.app', ADMIN_PASSWORD_HASH]
+  );
+
+  await query(
+    `INSERT INTO users (id, email, password, role, name, is_active)
+     VALUES ($1, $2, $3, 'employee', 'Test Employee', true)
+     ON CONFLICT (email) DO NOTHING`,
+    [EMPLOYEE_ID, 'employee@lomda.app', EMPLOYEE_PASSWORD_HASH]
   );
   console.log('✓ users seeded');
 

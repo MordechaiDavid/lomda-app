@@ -84,6 +84,17 @@ export default function DashboardPage() {
           </button>
         </div>
 
+        {user?.role === 'admin' && (
+          <div className="mt-8">
+            <a
+              href="/dashboard/admin/users"
+              className="inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-100"
+            >
+              Manage Users →
+            </a>
+          </div>
+        )}
+
         <section className="mt-10 rounded-3xl border border-slate-200 bg-slate-50 p-8">
           <h2 className="text-xl font-semibold text-slate-900">Protected content</h2>
           <p className="mt-3 text-sm leading-7 text-slate-600">

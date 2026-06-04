@@ -104,6 +104,27 @@ class ApiService {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   }
+
+  // Users (admin)
+  getUsers(page = 1, pageSize = 20, search?: string) {
+    return this.client.get('/users', { params: { page, pageSize, ...(search ? { search } : {}) } });
+  }
+
+  getUser(id: string) {
+    return this.client.get(`/users/${id}`);
+  }
+
+  createUser(data: { name: string; email: string; password: string; role: string }) {
+    return this.client.post('/users', data);
+  }
+
+  updateUser(id: string, data: { name?: string; email?: string; role?: string; password?: string; is_active?: boolean }) {
+    return this.client.put(`/users/${id}`, data);
+  }
+
+  deleteUser(id: string) {
+    return this.client.delete(`/users/${id}`);
+  }
 }
 
 export const apiService = new ApiService();

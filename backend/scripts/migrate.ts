@@ -16,6 +16,22 @@ async function migrate() {
   `);
   console.log('✓ users table');
 
+  await query(`ALTER TABLE users ALTER COLUMN role SET DEFAULT 'employee'`);
+  console.log('✓ users.role default updated to employee');
+
+  await query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='users' AND column_name='is_active'
+      ) THEN
+        ALTER TABLE users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true;
+      END IF;
+    END $$
+  `);
+  console.log('✓ users.is_active column');
+
   await query(`
     CREATE TABLE IF NOT EXISTS courses (
       id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
