@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiService } from '../../lib/apiService';
+import { useLang } from '../../lib/i18n';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('teacher@lms.com');
+  const { t, dir } = useLang();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,106 +20,90 @@ export default function LoginPage() {
     setSuccessMessage(null);
 
     if (!email.trim() || !password.trim()) {
-      setError('Please enter both email and password.');
+      setError(t('יש להזין כתובת מייל וסיסמה.', 'Please enter both email and password.'));
       return;
     }
 
     setIsSubmitting(true);
-
     try {
       const response = await apiService.login(email.trim(), password);
-      setSuccessMessage(`Welcome back, ${response.data.data.user.name}! Redirecting to your dashboard...`);
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 600);
-    } catch (submissionError: any) {
-      setError(
-        submissionError?.response?.data?.error?.message || 'Invalid email or password.'
-      );
+      const name = response.data.data.user.name;
+      setSuccessMessage(t(`ברוך הבא, ${name}! מעביר לדשבורד...`, `Welcome back, ${name}! Redirecting…`));
+      setTimeout(() => router.push('/dashboard'), 600);
+    } catch (submissionError: unknown) {
+      const msg = (submissionError as { response?: { data?: { error?: { message?: string } } } })
+        ?.response?.data?.error?.message;
+      setError(msg ?? t('כתובת מייל או סיסמה שגויים.', 'Invalid email or password.'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-16 sm:px-10">
-      <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-10 shadow-sm">
+    <main className="min-h-screen bg-slate-50 px-6 py-16 sm:px-10" dir={dir}>
+      <div className="mx-auto max-w-md rounded-3xl border border-slate-200 bg-white p-10 shadow-sm">
         <div className="mb-8 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-600">
-            Secure login
-          </p>
-          <h1 className="mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">
-            Sign in to Lomda
+          <div className="text-4xl mb-3">📖</div>
+          <h1 className="text-3xl font-bold text-slate-900">
+            {t('כניסה ללומדה', 'Sign in to Lomda')}
           </h1>
-          <p className="mt-3 text-sm text-slate-600 sm:text-base">
-            Use your LMS email and password to access your dashboard.
+          <p className="mt-2 text-sm text-slate-500">
+            {t('הזן את פרטי הכניסה שלך', 'Enter your credentials to access the dashboard')}
           </p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           {error && (
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           )}
           {successMessage && (
-            <div className="rounded-xl border border-lime-200 bg-lime-50 px-4 py-3 text-sm text-lime-900">
+            <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
               {successMessage}
             </div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-              Email address
+            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+              {t('כתובת מייל', 'Email address')}
             </label>
             <input
               id="email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none ring-blue-500 transition focus:border-blue-500 focus:ring-2"
-              placeholder="teacher@lms.com"
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none ring-blue-500 transition focus:border-blue-500 focus:ring-2"
+              placeholder={t('admin@lomda.app', 'admin@lomda.app')}
               autoComplete="email"
+              dir="ltr"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-              Password
+            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+              {t('סיסמה', 'Password')}
             </label>
             <input
               id="password"
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none ring-blue-500 transition focus:border-blue-500 focus:ring-2"
-              placeholder="Enter your password"
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none ring-blue-500 transition focus:border-blue-500 focus:ring-2"
+              placeholder={t('הזן סיסמה', 'Enter your password')}
               autoComplete="current-password"
+              dir="ltr"
             />
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
+            className="w-full rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
           >
-            {isSubmitting ? 'Signing in…' : 'Sign in'}
+            {isSubmitting ? t('מתחבר...', 'Signing in…') : t('כניסה', 'Sign in')}
           </button>
         </form>
-
-        <div className="mt-10 rounded-3xl border border-slate-200 bg-slate-50 px-6 py-6">
-          <p className="text-sm font-semibold text-slate-800">Alternate sign-in</p>
-          <p className="mt-2 text-sm text-slate-600">
-            In the future, you can add passwordless login using passkeys or WebAuthn here.
-          </p>
-          <button
-            type="button"
-            disabled
-            className="mt-4 inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 opacity-70"
-          >
-            Login with Passkey (coming soon)
-          </button>
-        </div>
       </div>
     </main>
   );

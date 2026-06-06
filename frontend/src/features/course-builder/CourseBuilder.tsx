@@ -34,6 +34,7 @@ export function CourseBuilder({ course, onSaved }: Props) {
     estimated_minutes: course.estimated_minutes ? String(course.estimated_minutes) : '',
     thumbnail_url: course.thumbnail_url ?? ''
   });
+  const [isPublished, setIsPublished] = useState(course.is_published);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
@@ -107,8 +108,10 @@ export function CourseBuilder({ course, onSaved }: Props) {
     setPublishing(true);
     try {
       await save();
-      await apiService.publishCourse(course.id);
+      const res = await apiService.publishCourse(course.id);
+      setIsPublished(true);
       setSaveMsg('פורסם ✓');
+      onSaved?.(res.data.data);
     } catch {
       setSaveMsg('שגיאה בפרסום');
     } finally {
@@ -122,7 +125,7 @@ export function CourseBuilder({ course, onSaved }: Props) {
       <header className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white z-10 flex-shrink-0">
         <div className="flex items-center gap-3">
           <h1 className="text-base font-semibold text-gray-800 truncate max-w-xs">{course.title}</h1>
-          {course.is_published && (
+          {isPublished && (
             <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">מפורסם</span>
           )}
         </div>
@@ -135,7 +138,7 @@ export function CourseBuilder({ course, onSaved }: Props) {
           >
             {saving ? 'שומר...' : 'שמור טיוטה'}
           </button>
-          {!course.is_published && (
+          {!isPublished && (
             <button
               onClick={publish}
               disabled={publishing || saving}

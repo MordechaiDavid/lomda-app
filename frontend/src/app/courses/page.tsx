@@ -49,17 +49,17 @@ export default function CoursesPage() {
         <div className="rounded-3xl bg-white p-8 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-slate-900">{t('קורסים', 'Courses')}</h1>
+              <h1 className="text-4xl font-bold text-slate-900">{t('לומדות', 'Courses')}</h1>
               <p className="mt-3 text-gray-600">
-                {t('צפה בספריית הלומדות, ערוך קורסים עם הבנאי הגרפי, או צור קורס חדש.',
-                   'Browse the learning library, edit courses with the visual builder, or create new ones.')}
+                {t('צפה בספריית הלומדות, ערוך עם הבנאי הגרפי, או צור לומדה חדשה.',
+                   'Browse the learning library, edit with the visual builder, or create a new course.')}
               </p>
             </div>
             <button
               onClick={() => { setShowNew(true); setNewTitle(''); setCreateError(''); }}
               className="rounded-xl bg-blue-600 px-4 py-2.5 text-white text-sm font-medium hover:bg-blue-700"
             >
-              {t('+ קורס חדש', '+ New Course')}
+              {t('+ לומדה חדשה', '+ New Course')}
             </button>
           </div>
         </div>
@@ -75,10 +75,10 @@ export default function CoursesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6" dir={dir}>
             <h2 className="text-lg font-bold text-slate-900 mb-4">
-              {t('קורס חדש', 'New Course')}
+              {t('לומדה חדשה', 'New Course')}
             </h2>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('שם הקורס', 'Course title')}
+              {t('שם הלומדה', 'Course title')}
             </label>
             <input
               type="text"

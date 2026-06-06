@@ -81,8 +81,8 @@ export default function DashboardPage() {
             >
               <span className="text-2xl">📚</span>
               <div>
-                <p className="text-sm font-semibold text-slate-800">ניהול קורסים</p>
-                <p className="text-xs text-slate-500">צפה וערוך קורסים</p>
+                <p className="text-sm font-semibold text-slate-800">לומדות</p>
+                <p className="text-xs text-slate-500">צפה וערוך לומדות</p>
               </div>
             </a>
             <a
@@ -110,7 +110,7 @@ export default function DashboardPage() {
 
         {/* My courses */}
         <section>
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">הלומדות שלי</h2>
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">הלומדות שלי 📚</h2>
 
           {enrollmentsLoading && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

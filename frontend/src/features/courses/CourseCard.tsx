@@ -34,7 +34,7 @@ export function CourseCard({ id, title, description, image, onEdit, onDelete }: 
         ) : null}
         <h2 className="text-2xl font-semibold mb-2 text-slate-900">{title}</h2>
         <p className="text-sm leading-6 text-gray-600">{description}</p>
-        <div className="mt-4 text-blue-600 font-semibold">{t('צפה בקורס ←', 'View course →')}</div>
+        <div className="mt-4 text-blue-600 font-semibold">{t('צפה בלומדה ←', 'View course →')}</div>
       </Link>
       <div className="mt-4 flex gap-2 justify-start">
         <button

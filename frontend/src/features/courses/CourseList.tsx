@@ -44,7 +44,7 @@ export default function CourseList({ initialCourses = null, onEdit, onDelete }: 
 
   if (loading) return <p className="text-center text-gray-600">טוען קורסים...</p>;
   if (error) return <p className="text-center text-red-600">{error}</p>;
-  if (!courses || !courses.length) return <p className="text-center text-gray-600">אין קורסים זמינים עדיין.</p>;
+  if (!courses || !courses.length) return <p className="text-center text-gray-600">אין לומדות זמינות עדיין.</p>;
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
