@@ -10,7 +10,7 @@ const HIDDEN_PATHS = ['/login', '/learn'];
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { lang, setLang, t } = useLang();
+  const { t } = useLang();
 
   // Hide on login, landing (/), and course player (/learn/...)
   const hidden =
@@ -67,18 +67,8 @@ export function Navbar() {
           ))}
         </div>
 
-        {/* Right side: lang toggle + user */}
+        {/* Right side: user */}
         <div className="flex items-center gap-3">
-          {/* Language toggle */}
-          <button
-            onClick={() => setLang(lang === 'he' ? 'en' : 'he')}
-            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
-            title={lang === 'he' ? 'Switch to English' : 'עבור לעברית'}
-          >
-            <span className="text-base leading-none">{lang === 'he' ? '🇮🇱' : '🇬🇧'}</span>
-            <span>{lang === 'he' ? 'EN' : 'עב'}</span>
-          </button>
-
           {user && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500 hidden sm:inline truncate max-w-28">
