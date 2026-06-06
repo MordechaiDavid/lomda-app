@@ -21,10 +21,10 @@ router.get('/', async (req: Request, res: Response) => {
 
   const [dataResult, countResult] = await Promise.all([
     query<Course>(
-      'SELECT * FROM courses ORDER BY created_at DESC LIMIT $1 OFFSET $2',
+      'SELECT * FROM courses WHERE is_active = true ORDER BY created_at DESC LIMIT $1 OFFSET $2',
       [pageSize, offset]
     ),
-    query<{ count: string }>('SELECT COUNT(*) FROM courses')
+    query<{ count: string }>('SELECT COUNT(*) FROM courses WHERE is_active = true')
   ]);
 
   const total = parseInt(countResult.rows[0].count, 10);
@@ -43,7 +43,7 @@ router.get('/', async (req: Request, res: Response) => {
 
 // GET /api/v1/courses/:id
 router.get('/:id', async (req: Request, res: Response) => {
-  const result = await query<Course>('SELECT * FROM courses WHERE id = $1', [req.params.id]);
+  const result = await query<Course>('SELECT * FROM courses WHERE id = $1 AND is_active = true', [req.params.id]);
 
   if (!result.rows[0]) {
     return res.status(404).json({

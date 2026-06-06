@@ -1,51 +1,41 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import CourseList from '../../features/courses/CourseList';
 import AddCourseModal from '../../features/courses/AddCourseModal';
 import { apiService } from '../../lib/apiService';
 
 export default function CoursesPage() {
+  const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editingCourse, setEditingCourse] = useState<any | null>(null);
-  const [courses, setCourses] = useState<any[] | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      try {
-        const res = await apiService.getCourses();
-        if (mounted) setCourses(res.data.data.courses || []);
-      } catch (e) {
-        if (mounted) setCourses([]);
-      }
-    };
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const { data, isLoading } = useQuery({
+    queryKey: ['courses'],
+    queryFn: () => apiService.getCourses().then((res) => res.data.data.courses as any[]),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (course: any) => apiService.createCourse(course),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['courses'] }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiService.deleteCourse(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['courses'] }),
+  });
 
   function handleSave(course: any) {
-    if (editingCourse) {
-      // Update existing course
-      setCourses((c) => c ? c.map((c) => c.id === course.id ? course : c) : [course]);
-      setEditingCourse(null);
-      setShowEdit(false);
-    } else {
-      // Add new course to local state immediately for instant UI feedback
-      setCourses((c) => (c ? [course, ...c] : [course]));
-    }
-    
-    // Sync with backend asynchronously (fire and forget)
-    apiService.createCourse(course).catch((err) => {
-      console.warn('Failed to save course to backend:', err);
-    });
+    createMutation.mutate(course);
+    setShowAdd(false);
+    setShowEdit(false);
+    setEditingCourse(null);
   }
 
   function handleEdit(id: string) {
-    const course = courses?.find((c) => c.id === id);
+    const course = data?.find((c: any) => c.id === id);
     if (course) {
       setEditingCourse(course);
       setShowEdit(true);
@@ -53,11 +43,7 @@ export default function CoursesPage() {
   }
 
   function handleDelete(id: string) {
-    apiService.deleteCourse(id).then(() => {
-      setCourses((c) => c ? c.filter((c) => c.id !== id) : []);
-    }).catch((err) => {
-      console.warn('Failed to delete course from backend:', err);
-    });
+    deleteMutation.mutate(id);
   }
 
   return (
@@ -77,7 +63,7 @@ export default function CoursesPage() {
           </div>
         </div>
 
-        <CourseList initialCourses={courses} onEdit={handleEdit} onDelete={handleDelete} />
+        <CourseList initialCourses={isLoading ? null : (data ?? [])} onEdit={handleEdit} onDelete={handleDelete} />
       </div>
 
       {showAdd && <AddCourseModal onClose={() => setShowAdd(false)} onSave={handleSave} />}

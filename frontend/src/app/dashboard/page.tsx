@@ -1,35 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../../lib/apiService';
-
-interface AuthUser {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-}
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    apiService
-      .getCurrentUser()
-      .then((response) => {
-        setUser(response.data.data.user);
-      })
-      .catch(() => {
-        setError('Your session has expired. Please sign in again.');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+  const { data: user, isLoading, isError } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => apiService.getCurrentUser().then((res) => res.data.data.user),
+    retry: false,
+  });
 
   const handleLogout = async () => {
     try {
@@ -39,7 +21,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <main className="min-h-screen bg-slate-50 px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-10 shadow-sm">
@@ -49,11 +31,11 @@ export default function DashboardPage() {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <main className="min-h-screen bg-slate-50 px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-10 shadow-sm">
-          <p className="text-sm text-red-600">{error}</p>
+          <p className="text-sm text-red-600">Your session has expired. Please sign in again.</p>
           <button
             onClick={() => router.push('/login')}
             className="mt-6 inline-flex rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"

@@ -20,19 +20,6 @@ async function migrate() {
   console.log('✓ users.role default updated to employee');
 
   await query(`
-    DO $$
-    BEGIN
-      IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns
-        WHERE table_name='courses' AND column_name='is_active'
-      ) THEN
-        ALTER TABLE courses ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true;
-      END IF;
-    END $$
-  `);
-  console.log('✓ courses.is_active column');
-
-  await query(`
     CREATE TABLE IF NOT EXISTS courses (
       id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       title       TEXT NOT NULL,
@@ -44,6 +31,19 @@ async function migrate() {
     )
   `);
   console.log('✓ courses table');
+
+  await query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='courses' AND column_name='is_active'
+      ) THEN
+        ALTER TABLE courses ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true;
+      END IF;
+    END $$
+  `);
+  console.log('✓ courses.is_active column');
 
   await pool.end();
   console.log('Migrations complete.');

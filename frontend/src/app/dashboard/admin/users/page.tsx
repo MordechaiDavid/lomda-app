@@ -1,62 +1,45 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '../../../../lib/apiService';
 import UserTable, { type UserRow } from '../../../../features/auth/UserTable';
 import UserFormModal from '../../../../features/auth/UserFormModal';
 import DeleteConfirmDialog from '../../../../features/auth/DeleteConfirmDialog';
 
-interface AuthUser {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-}
-
 export default function AdminUsersPage() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
-  const [users, setUsers] = useState<UserRow[]>([]);
-  const [total, setTotal] = useState(0);
+  const queryClient = useQueryClient();
+
   const [page, setPage] = useState(1);
   const pageSize = 20;
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
 
-  const [loadingUsers, setLoadingUsers] = useState(true);
-  const [error, setError] = useState('');
-
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const [deactivatingUser, setDeactivatingUser] = useState<UserRow | null>(null);
-  const [deactivateLoading, setDeactivateLoading] = useState(false);
 
-  useEffect(() => {
-    apiService.getCurrentUser().then((res) => {
-      setCurrentUser(res.data.data.user);
-    }).catch(() => {
-      router.push('/login');
-    });
-  }, [router]);
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => apiService.getCurrentUser().then((res) => res.data.data.user),
+    retry: false,
+  });
 
-  const loadUsers = useCallback(async () => {
-    setLoadingUsers(true);
-    setError('');
-    try {
-      const res = await apiService.getUsers(page, pageSize, search || undefined);
-      setUsers(res.data.data.users);
-      setTotal(res.data.data.total);
-    } catch (err: any) {
-      setError(err?.response?.data?.error?.message ?? 'Failed to load users.');
-    } finally {
-      setLoadingUsers(false);
-    }
-  }, [page, search]);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['users', { page, pageSize, search }],
+    queryFn: () =>
+      apiService.getUsers(page, pageSize, search || undefined).then((res) => res.data.data),
+  });
 
-  useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiService.deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setDeactivatingUser(null);
+    },
+  });
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -64,30 +47,20 @@ export default function AdminUsersPage() {
     setSearch(searchInput.trim());
   }
 
-  function handleSaveUser(_user: UserRow) {
-    loadUsers();
+  function handleSaveUser() {
+    queryClient.invalidateQueries({ queryKey: ['users'] });
   }
 
-  async function handleConfirmDeactivate() {
-    if (!deactivatingUser) return;
-    setDeactivateLoading(true);
-    try {
-      await apiService.deleteUser(deactivatingUser.id);
-      setDeactivatingUser(null);
-      loadUsers();
-    } catch (err: any) {
-      setError(err?.response?.data?.error?.message ?? 'Failed to deactivate user.');
-    } finally {
-      setDeactivateLoading(false);
-    }
-  }
-
+  const users: UserRow[] = data?.users ?? [];
+  const total: number = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const errorMessage = error
+    ? (error as any)?.response?.data?.error?.message ?? 'Failed to load users.'
+    : null;
 
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-10 sm:px-10">
       <div className="mx-auto max-w-5xl">
-        {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
             <button
@@ -107,7 +80,6 @@ export default function AdminUsersPage() {
           </button>
         </div>
 
-        {/* Search */}
         <form onSubmit={handleSearchSubmit} className="mb-4 flex gap-2">
           <input
             value={searchInput}
@@ -132,14 +104,13 @@ export default function AdminUsersPage() {
           )}
         </form>
 
-        {error && (
+        {errorMessage && (
           <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
+            {errorMessage}
           </div>
         )}
 
-        {/* Table */}
-        {loadingUsers ? (
+        {isLoading ? (
           <div className="rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">
             Loading users…
           </div>
@@ -152,7 +123,6 @@ export default function AdminUsersPage() {
           />
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
             <span>Page {page} of {totalPages}</span>
@@ -176,7 +146,6 @@ export default function AdminUsersPage() {
         )}
       </div>
 
-      {/* Modals */}
       {showCreateModal && (
         <UserFormModal
           onClose={() => setShowCreateModal(false)}
@@ -195,9 +164,9 @@ export default function AdminUsersPage() {
       {deactivatingUser && (
         <DeleteConfirmDialog
           userName={deactivatingUser.name}
-          onConfirm={handleConfirmDeactivate}
+          onConfirm={() => deleteMutation.mutate(deactivatingUser.id)}
           onCancel={() => setDeactivatingUser(null)}
-          loading={deactivateLoading}
+          loading={deleteMutation.isPending}
         />
       )}
     </main>
