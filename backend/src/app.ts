@@ -16,6 +16,8 @@ import courseRoutes from './api/courses/routes.js';
 import campaignRoutes from './api/campaigns/routes.js';
 import analyticsRoutes from './api/analytics/routes.js';
 import userRoutes from './api/users/routes.js';
+import enrollmentRoutes from './api/enrollments/routes.js';
+import learnRoutes from './api/learn/routes.js';
 
 const logger = pino();
 
@@ -53,6 +55,8 @@ app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/campaigns', campaignRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/enrollments', enrollmentRoutes);
+app.use('/api/v1/learn', learnRoutes);
 
 app.use((_req: Request, res: Response) => {
   res.status(404).json({

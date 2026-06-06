@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const protectedPaths = ['/dashboard'];
+const protectedPaths = ['/dashboard', '/courses'];
 const adminPaths = ['/dashboard/admin'];
 
 function getTokenPayload(token: string): { id: string; email: string; role: string; exp: number } | null {
@@ -41,5 +41,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard', '/dashboard/:path*']
+  matcher: ['/dashboard', '/dashboard/:path*', '/courses', '/courses/:path*']
 };

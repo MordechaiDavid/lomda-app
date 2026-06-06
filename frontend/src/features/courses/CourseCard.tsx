@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useLang } from '../../lib/i18n';
 
 interface CourseCardProps {
   id: string;
@@ -12,6 +14,16 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ id, title, description, image, onEdit, onDelete }: CourseCardProps) {
+  const router = useRouter();
+  const { t } = useLang();
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Navigate to the new drag-and-drop builder
+    router.push(`/dashboard/courses/${id}/edit`);
+    onEdit?.(id);
+  };
+
   return (
     <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-lg">
       <Link href={`/courses/${id}`} className="block">
@@ -22,15 +34,12 @@ export function CourseCard({ id, title, description, image, onEdit, onDelete }: 
         ) : null}
         <h2 className="text-2xl font-semibold mb-2 text-slate-900">{title}</h2>
         <p className="text-sm leading-6 text-gray-600">{description}</p>
-        <div className="mt-4 text-blue-600 font-semibold">View course →</div>
+        <div className="mt-4 text-blue-600 font-semibold">{t('צפה בקורס ←', 'View course →')}</div>
       </Link>
-      <div className="mt-4 flex gap-2 justify-end">
+      <div className="mt-4 flex gap-2 justify-start">
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            onEdit?.(id);
-          }}
-          title="Edit course"
+          onClick={handleEdit}
+          title="ערוך קורס (בנאי גרפי)"
           className="flex items-center justify-center w-8 h-8 rounded-md bg-amber-500 text-white hover:bg-amber-600 transition"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -41,11 +50,11 @@ export function CourseCard({ id, title, description, image, onEdit, onDelete }: 
         <button
           onClick={(e) => {
             e.preventDefault();
-            if (confirm('Delete this course?')) {
+            if (confirm(t('למחוק קורס זה?', 'Delete this course?'))) {
               onDelete?.(id);
             }
           }}
-          title="Delete course"
+          title="מחק קורס"
           className="flex items-center justify-center w-8 h-8 rounded-md bg-red-500 text-white hover:bg-red-600 transition"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

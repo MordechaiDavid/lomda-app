@@ -4,8 +4,8 @@ import './globals.css';
 import { Providers } from '../lib/providers';
 
 export const metadata: Metadata = {
-  title: 'Lomda - Enterprise Learning Management',
-  description: 'Mobile-first learning platform for organizations',
+  title: 'לומדה — מערכת הדרכה ארגונית',
+  description: 'פלטפורמת למידה ארגונית להפצת לומדות ומעקב ציות',
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="he" dir="rtl">
       <body>
         <Providers>{children}</Providers>
       </body>

@@ -2,12 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap');
+
 * {
   @apply box-border;
 }
 
+html {
+  font-family: 'Heebo', 'Arial', sans-serif;
+}
+
 body {
   @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-white;
+  direction: rtl;
+}
+
+/* Ensure LTR for code blocks */
+pre, code, .ltr {
+  direction: ltr;
+  text-align: left;
+}
+
+/* React Quill RTL fix */
+.ql-editor {
+  direction: rtl;
+  text-align: right;
 }
 
 a {

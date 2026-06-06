@@ -31,7 +31,7 @@ export default function CourseList({ initialCourses = null, onEdit, onDelete }: 
         const res = await apiService.getCourses();
         if (mounted) setCourses(res.data.data.courses || []);
       } catch (e) {
-        if (mounted) setError('Failed to load courses.');
+        if (mounted) setError('שגיאה בטעינת הקורסים.');
       } finally {
         if (mounted) setLoading(false);
       }
@@ -42,9 +42,9 @@ export default function CourseList({ initialCourses = null, onEdit, onDelete }: 
     };
   }, [initialCourses]);
 
-  if (loading) return <p className="text-center text-gray-600">Loading courses...</p>;
+  if (loading) return <p className="text-center text-gray-600">טוען קורסים...</p>;
   if (error) return <p className="text-center text-red-600">{error}</p>;
-  if (!courses || !courses.length) return <p className="text-center text-gray-600">No courses available yet.</p>;
+  if (!courses || !courses.length) return <p className="text-center text-gray-600">אין קורסים זמינים עדיין.</p>;
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
