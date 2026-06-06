@@ -28,7 +28,7 @@ vi.mock('../src/db/index.js', () => ({
     if (sql.includes('COUNT(*)')) {
       return Promise.resolve({ rows: [{ count: String(mockCourses.length) }], rowCount: 1 });
     }
-    if (sql.includes('SELECT * FROM courses ORDER BY')) {
+    if (sql.includes('FROM courses') && sql.includes('ORDER BY')) {
       const limit = (params?.[0] as number) ?? 20;
       const offset = (params?.[1] as number) ?? 0;
       const rows = mockCourses.slice(offset, offset + limit);
