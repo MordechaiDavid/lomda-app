@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import type {
   ContentBlock, Course, CourseStep,
@@ -23,6 +24,17 @@ interface Props {
 type Phase = 'content' | 'quiz' | 'complete' | 'failed';
 
 export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep = 0, previewMode = false }: Props) {
+  const router = useRouter();
+
+  // Full-screen overlay — Esc exits
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') router.back();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [router]);
+
   const steps: CourseStep[] = normalizeToSteps(course.content as unknown[]);
   const contentSteps = steps.filter((s) => !s.blocks.some((b) => b.type === 'quiz'));
   const quizSteps   = steps.filter((s) =>  s.blocks.some((b) => b.type === 'quiz'));
@@ -133,9 +145,19 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
 
   if (phase === 'quiz') {
     return (
-      <div className="min-h-screen bg-gray-50" dir="rtl">
+      <div className="fixed inset-0 z-50 bg-gray-50 flex flex-col" dir="rtl">
+        <button
+          onClick={() => router.back()}
+          title="לצאת (ESC)"
+          className="absolute top-3 left-3 z-10 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/20 hover:bg-black/35 text-white text-xs font-medium transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          ESC
+        </button>
         {previewMode && (
-          <div className="bg-amber-400 text-amber-900 text-xs font-semibold text-center py-1.5 px-4">
+          <div className="bg-amber-400 text-amber-900 text-xs font-semibold text-center py-1.5 px-4 flex-shrink-0">
             👁 תצוגה מקדימה — כך ייראה המשתמש | הנתונים לא נשמרים
           </div>
         )}
@@ -145,11 +167,13 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
           stepTitle="שאלון סיום"
           course={course}
         />
-        <QuizFlow
-          questions={allQuestions}
-          passingScore={course.passing_score}
-          onSubmit={handleQuizSubmit}
-        />
+        <div className="flex-1 overflow-y-auto">
+          <QuizFlow
+            questions={allQuestions}
+            passingScore={course.passing_score}
+            onSubmit={handleQuizSubmit}
+          />
+        </div>
       </div>
     );
   }
@@ -159,7 +183,19 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
   const totalSteps = contentSteps.length + (hasQuiz ? 1 : 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col" dir="rtl">
+    <div className="fixed inset-0 z-50 bg-gray-50 flex flex-col" dir="rtl">
+      {/* Esc hint */}
+      <button
+        onClick={() => router.back()}
+        title="לצאת (ESC)"
+        className="absolute top-3 left-3 z-10 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/20 hover:bg-black/35 text-white text-xs font-medium transition-colors"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        ESC
+      </button>
+
       {previewMode && (
         <div className="bg-amber-400 text-amber-900 text-xs font-semibold text-center py-1.5 px-4 flex-shrink-0">
           👁 תצוגה מקדימה — כך ייראה המשתמש | הנתונים לא נשמרים
