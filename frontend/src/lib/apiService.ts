@@ -161,6 +161,13 @@ class ApiService {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   };
+
+  // ─── Integrations: Microsoft Entra ID (Azure AD) ───────────────────────────
+  getEntraStatus = () => this.client.get('/integrations/entra/status');
+
+  testEntraConnection = () => this.client.post('/integrations/entra/test');
+
+  syncEntraUsers = () => this.client.post('/integrations/entra/sync');
 }
 
 export const apiService = new ApiService();
