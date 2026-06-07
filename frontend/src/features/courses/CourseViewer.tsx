@@ -1,4 +1,3 @@
-// Example React component for course viewer
 import React, { useState } from 'react';
 
 interface CourseContent {
@@ -20,13 +19,11 @@ export function CourseViewer({ content, onProgress }: CourseViewerProps) {
   const handleNext = () => {
     const nextStep = Math.min(currentStep + 1, content.length - 1);
     setCurrentStep(nextStep);
-    const progress = Math.round(((nextStep + 1) / content.length) * 100);
-    onProgress(nextStep, progress);
+    onProgress(nextStep, Math.round(((nextStep + 1) / content.length) * 100));
   };
 
   const handlePrevious = () => {
-    const prevStep = Math.max(currentStep - 1, 0);
-    setCurrentStep(prevStep);
+    setCurrentStep((s) => Math.max(s - 1, 0));
   };
 
   const currentContent = content[currentStep];
@@ -39,12 +36,15 @@ export function CourseViewer({ content, onProgress }: CourseViewerProps) {
       case 'text':
         return (
           <div
-            className="text-lg leading-relaxed prose prose-sm max-w-none [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-bold [&_h3]:text-lg [&_h3]:font-semibold [&_strong]:font-bold [&_em]:italic [&_u]:underline [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:mb-2 [&_a]:text-blue-600 [&_a]:underline [&_code]:bg-gray-100 [&_code]:px-2 [&_code]:py-1 [&_code]:rounded"
+            className="text-lg leading-relaxed prose prose-sm max-w-none"
             dangerouslySetInnerHTML={{ __html: currentContent.content }}
           />
         );
       case 'image':
-        return <img src={currentContent.content} alt="Course content" className="w-full" />;
+        return (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={currentContent.content} alt="Course content" className="w-full rounded-xl" />
+        );
       case 'video':
         return (
           <video controls className="w-full">
@@ -58,7 +58,6 @@ export function CourseViewer({ content, onProgress }: CourseViewerProps) {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center mb-4">
@@ -66,37 +65,24 @@ export function CourseViewer({ content, onProgress }: CourseViewerProps) {
             <span className="text-sm font-medium text-gray-600">{progress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 py-8">{renderContent()}</div>
       </div>
 
-      {/* Footer Navigation */}
       <div className="bg-white border-t">
         <div className="max-w-4xl mx-auto px-4 py-6 flex justify-between">
-          <button
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg disabled:opacity-50"
-          >
+          <button onClick={handlePrevious} disabled={currentStep === 0}
+            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg disabled:opacity-50">
             Previous
           </button>
-          <span className="text-sm text-gray-600">
-            {currentStep + 1} / {content.length}
-          </span>
-          <button
-            onClick={handleNext}
-            disabled={currentStep === content.length - 1}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"
-          >
+          <span className="text-sm text-gray-600">{currentStep + 1} / {content.length}</span>
+          <button onClick={handleNext} disabled={currentStep === content.length - 1}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50">
             Next
           </button>
         </div>

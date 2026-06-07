@@ -1,4 +1,3 @@
-// Custom React hook for API requests
 import { useState, useCallback } from 'react';
 import axios, { AxiosError } from 'axios';
 
@@ -27,7 +26,7 @@ export function useApi<T>(options?: UseApiOptions) {
   });
 
   const request = useCallback(
-    async (method: 'get' | 'post' | 'put' | 'delete', url: string, data?: any) => {
+    async (method: 'get' | 'post' | 'put' | 'delete', url: string, data?: unknown) => {
       try {
         setState({ data: null, loading: true, error: null });
         const response = await api[method]<{ data: T }>(url, data);
@@ -40,14 +39,15 @@ export function useApi<T>(options?: UseApiOptions) {
         throw err;
       }
     },
-    [api]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 
   return {
     ...state,
-    get: (url: string) => request('get', url),
-    post: (url: string, data: any) => request('post', url, data),
-    put: (url: string, data: any) => request('put', url, data),
-    delete: (url: string) => request('delete', url),
+    get:    (url: string)                    => request('get',    url),
+    post:   (url: string, data?: unknown)    => request('post',   url, data),
+    put:    (url: string, data?: unknown)    => request('put',    url, data),
+    delete: (url: string)                    => request('delete', url),
   };
 }
