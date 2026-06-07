@@ -59,7 +59,7 @@ export default function NewCampaignPage() {
   const toggleUser = (email: string) => {
     setSelectedEmails((prev) => {
       const next = new Set(prev);
-      next.has(email) ? next.delete(email) : next.add(email);
+      if (next.has(email)) { next.delete(email); } else { next.add(email); }
       return next;
     });
   };

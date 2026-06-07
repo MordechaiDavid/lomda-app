@@ -374,6 +374,7 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
       const w = b.width === 'medium' ? 'max-w-sm' : b.width === 'large' ? 'max-w-lg' : 'w-full';
       return (
         <div className={`${w} mx-auto`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={b.url} alt={b.alt ?? ''} className="w-full rounded-xl shadow-sm" />
           {b.caption && <p className="text-xs text-gray-500 text-center mt-2">{b.caption}</p>}
         </div>
@@ -383,10 +384,9 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
       const b = block as VideoBlock;
       return (
         <div className="rounded-xl overflow-hidden shadow-sm bg-black">
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <ReactPlayer url={b.url} width="100%" height="360px" controls={true}
-            playing={b.autoplay ?? false}
-            {...({ config: { youtube: { playerVars: { rel: 0 } } } } as any)} />
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            playing={b.autoplay ?? false} {...({ config: { youtube: { playerVars: { rel: 0 } } } } as any)} />
           {b.caption && <p className="text-xs text-gray-500 text-center py-2 bg-gray-50">{b.caption}</p>}
         </div>
       );

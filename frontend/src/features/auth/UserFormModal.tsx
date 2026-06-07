@@ -63,8 +63,9 @@ export default function UserFormModal({ onClose, onSave, initialData }: Props) {
       }
       onSave(result.data.data);
       onClose();
-    } catch (err: any) {
-      setServerError(err?.response?.data?.error?.message ?? 'Something went wrong. Please try again.');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      setServerError(msg ?? 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

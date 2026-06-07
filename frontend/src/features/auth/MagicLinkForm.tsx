@@ -23,8 +23,9 @@ export function MagicLinkForm({ onSuccess, onError }: MagicLinkFormProps) {
 
       setSent(true);
       onSuccess?.(response.data.data.message);
-    } catch (error: any) {
-      onError?.(error.response?.data?.error?.message || 'Failed to send magic link');
+    } catch (error: unknown) {
+      const msg = (error as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      onError?.(msg ?? 'Failed to send magic link');
     } finally {
       setLoading(false);
     }

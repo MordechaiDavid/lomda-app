@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import CourseDetail from '../../../features/courses/CourseDetail';
@@ -12,7 +13,7 @@ interface CourseDetailPageProps {
 
 export default function CourseDetailPage({ params }: CourseDetailPageProps) {
   const [showEdit, setShowEdit] = useState(false);
-  const [course, setCourse] = useState<any | null>(null);
+  const [course, setCourse] = useState<any>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {

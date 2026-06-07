@@ -20,7 +20,7 @@ export default function CoursesPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['courses'],
-    queryFn: () => apiService.getCourses().then((res) => res.data.data.courses as any[]),
+    queryFn: () => apiService.getCourses().then((res) => res.data.data.courses as { id: string; title: string; description: string; is_published: boolean }[]),
   });
 
   const deleteMutation = useMutation({

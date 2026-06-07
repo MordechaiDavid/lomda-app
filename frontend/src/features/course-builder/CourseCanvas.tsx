@@ -132,6 +132,7 @@ function BlockPreview({ block }: { block: ContentBlock }) {
     case 'image': {
       const b = block as ImageBlock;
       return b.url
+        // eslint-disable-next-line @next/next/no-img-element
         ? <img src={b.url} alt={b.alt ?? ''} className="w-full max-h-48 object-cover rounded" />
         : <div className="h-24 bg-gray-100 rounded flex items-center justify-center text-gray-400">🖼 תמונה</div>;
     }

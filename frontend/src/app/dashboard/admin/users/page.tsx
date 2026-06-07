@@ -55,7 +55,7 @@ export default function AdminUsersPage() {
   const total: number = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const errorMessage = error
-    ? (error as any)?.response?.data?.error?.message ?? 'Failed to load users.'
+    ? ((error as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ?? 'שגיאה בטעינת המשתמשים.')
     : null;
 
   return (

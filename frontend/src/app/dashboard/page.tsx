@@ -161,6 +161,7 @@ function EnrollmentCard({ enrollment: e }: { enrollment: EnrollmentWithJoins }) 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
       {thumbnail ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img src={thumbnail} alt={title} className="w-full h-28 object-cover" />
       ) : (
         <div className="w-full h-28 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
