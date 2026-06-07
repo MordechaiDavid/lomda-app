@@ -107,6 +107,8 @@ class ApiService {
   updateCampaign = (id: string, data: { title?: string; due_date?: string; passing_score?: number }) =>
     this.client.put(`/campaigns/${id}`, data);
 
+  deleteCampaign = (id: string) => this.client.delete(`/campaigns/${id}`);
+
   getCampaign = (id: string) => this.client.get(`/campaigns/${id}`);
 
   addCampaignRecipients = (id: string, emails: string[]) =>

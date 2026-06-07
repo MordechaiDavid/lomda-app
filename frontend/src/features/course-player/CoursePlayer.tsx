@@ -17,11 +17,12 @@ interface Props {
   enrollmentId: string;
   campaignToken?: string;
   initialStep?: number;
+  previewMode?: boolean;
 }
 
 type Phase = 'content' | 'quiz' | 'complete' | 'failed';
 
-export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep = 0 }: Props) {
+export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep = 0, previewMode = false }: Props) {
   const steps: CourseStep[] = normalizeToSteps(course.content as unknown[]);
   const contentSteps = steps.filter((s) => !s.blocks.some((b) => b.type === 'quiz'));
   const quizSteps   = steps.filter((s) =>  s.blocks.some((b) => b.type === 'quiz'));
@@ -60,8 +61,9 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
     return () => clearInterval(id);
   }, [stepIdx, minSec]);
 
-  // Auto-save progress every 30s
+  // Auto-save progress every 30s (skip in preview)
   useEffect(() => {
+    if (previewMode) return;
     const id = setInterval(() => {
       apiService.updateProgress(enrollmentId, {
         current_step: stepIdx,
@@ -69,12 +71,13 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
       }).catch(() => {});
     }, 30000);
     return () => clearInterval(id);
-  }, [enrollmentId, stepIdx]);
+  }, [enrollmentId, stepIdx, previewMode]);
 
-  // Save on step change
+  // Save on step change (skip in preview)
   useEffect(() => {
+    if (previewMode) return;
     apiService.updateProgress(enrollmentId, { current_step: stepIdx }).catch(() => {});
-  }, [enrollmentId, stepIdx]);
+  }, [enrollmentId, stepIdx, previewMode]);
 
   // Background music
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -92,25 +95,37 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
     if (isLastStep) {
       if (hasQuiz) { setPhase('quiz'); }
       else {
+        if (previewMode) { setPhase('complete'); return; }
         apiService.submitQuiz(enrollmentId, {}, campaignToken)
           .then(() => setPhase('complete')).catch(() => {});
       }
     } else {
       setStepIdx((i) => i + 1);
     }
-  }, [isLastStep, hasQuiz, enrollmentId, campaignToken]);
+  }, [isLastStep, hasQuiz, enrollmentId, campaignToken, previewMode]);
 
   const handlePrev = useCallback(() => {
     if (stepIdx > 0) setStepIdx((i) => i - 1);
   }, [stepIdx]);
 
   const handleQuizSubmit = useCallback(async (answers: Record<string, string>) => {
+    if (previewMode) {
+      let correct = 0;
+      allQuestions.forEach((q) => {
+        if (answers[q.id] === q.correctOptionId) correct++;
+      });
+      const score = allQuestions.length > 0 ? Math.round((correct / allQuestions.length) * 100) : 100;
+      const passed = score >= (course.passing_score ?? 70);
+      setResult({ score, passed });
+      setPhase(passed ? 'complete' : 'failed');
+      return { score, passed };
+    }
     const res = await apiService.submitQuiz(enrollmentId, answers, campaignToken);
     const { score, passed } = res.data.data;
     setResult({ score, passed });
     setPhase(passed ? 'complete' : 'failed');
     return { score, passed };
-  }, [enrollmentId, campaignToken]);
+  }, [enrollmentId, campaignToken, previewMode, allQuestions, course.passing_score]);
 
   if (phase === 'complete' || phase === 'failed') {
     return <CompletionScreen score={result?.score} passed={phase === 'complete'} courseTitle={course.title} />;
@@ -119,6 +134,11 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
   if (phase === 'quiz') {
     return (
       <div className="min-h-screen bg-gray-50" dir="rtl">
+        {previewMode && (
+          <div className="bg-amber-400 text-amber-900 text-xs font-semibold text-center py-1.5 px-4">
+            👁 תצוגה מקדימה — כך ייראה המשתמש | הנתונים לא נשמרים
+          </div>
+        )}
         <StepProgressBar
           currentStep={contentSteps.length}
           totalSteps={contentSteps.length + 1}
@@ -140,6 +160,11 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col" dir="rtl">
+      {previewMode && (
+        <div className="bg-amber-400 text-amber-900 text-xs font-semibold text-center py-1.5 px-4 flex-shrink-0">
+          👁 תצוגה מקדימה — כך ייראה המשתמש | הנתונים לא נשמרים
+        </div>
+      )}
       <StepProgressBar
         currentStep={stepIdx + 1}
         totalSteps={totalSteps}
@@ -293,13 +318,22 @@ function StepProgressBar({
   activeIdx?: number;
 }) {
   const pct = Math.round((currentStep / totalSteps) * 100);
+  const remaining = totalSteps - currentStep;
+  const rightLabel =
+    pct >= 100
+      ? 'הושלמה ✓'
+      : remaining === 1
+      ? 'שלב אחד נותר'
+      : remaining > 0
+      ? `נותרו ${remaining} שלבים`
+      : '';
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-sm font-semibold text-gray-800 truncate">{course.title}</h1>
-          <span className="text-xs text-gray-500 flex-shrink-0">{pct}% הושלם</span>
+          <span className="text-xs text-gray-500 flex-shrink-0">{rightLabel}</span>
         </div>
 
         {/* Main progress bar */}

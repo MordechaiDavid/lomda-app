@@ -31,7 +31,7 @@ router.get('/', requireTrainer, async (req: Request, res: Response) => {
      FROM campaigns camp
      JOIN courses c ON c.id = camp.course_id
      LEFT JOIN campaign_recipients cr ON cr.campaign_id = camp.id
-     WHERE camp.created_by = $1
+     WHERE camp.created_by = $1 AND camp.status != 'archived'
      GROUP BY camp.id, c.title
      ORDER BY camp.created_at DESC`,
     [req.user!.id]
@@ -112,6 +112,22 @@ router.put('/:id', requireTrainer, async (req: Request, res: Response) => {
   res.json({ success: true, data: result.rows[0] });
 });
 
+// DELETE /api/v1/campaigns/:id — archive (soft delete)
+router.delete('/:id', requireTrainer, async (req: Request, res: Response) => {
+  const existing = await query('SELECT id FROM campaigns WHERE id = $1 AND created_by = $2', [
+    req.params.id,
+    req.user!.id
+  ]);
+  if (!existing.rows[0]) throw new NotFoundError('Campaign not found');
+
+  await query(
+    `UPDATE campaigns SET status = 'archived' WHERE id = $1`,
+    [req.params.id]
+  );
+
+  res.json({ success: true });
+});
+
 // POST /api/v1/campaigns/:id/recipients — add recipients
 router.post('/:id/recipients', requireTrainer, async (req: Request, res: Response) => {
   const { emails } = req.body; // string[]
@@ -177,6 +193,16 @@ router.post('/:id/send', requireTrainer, async (req: Request, res: Response) => 
   if (recipientsResult.rows.length === 0) {
     throw new ValidationError('No pending recipients to send to');
   }
+
+  // Auto-enroll known users so they see the course in their dashboard immediately
+  await query(
+    `INSERT INTO enrollments (user_id, course_id)
+     SELECT cr.user_id, $1
+     FROM campaign_recipients cr
+     WHERE cr.campaign_id = $2 AND cr.user_id IS NOT NULL
+     ON CONFLICT (user_id, course_id) DO NOTHING`,
+    [campaign.course_id, req.params.id]
+  );
 
   let sent = 0;
   const errors: string[] = [];

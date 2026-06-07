@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import CourseList from '../../features/courses/CourseList';
 import { apiService } from '../../lib/apiService';
 import { useLang } from '../../lib/i18n';
+import { SAMPLE_LOMDOT } from '../../lib/sampleLomdot';
 
 export default function CoursesPage() {
   const queryClient = useQueryClient();
@@ -17,6 +18,8 @@ export default function CoursesPage() {
   const [newTitle, setNewTitle] = useState('');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
+  const [seeding, setSeeding] = useState(false);
+  const [seedMsg, setSeedMsg] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['courses'],
@@ -27,6 +30,29 @@ export default function CoursesPage() {
     mutationFn: (id: string) => apiService.deleteCourse(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['courses'] }),
   });
+
+  async function handleSeedSamples() {
+    setSeeding(true);
+    setSeedMsg('');
+    try {
+      for (const lomda of SAMPLE_LOMDOT) {
+        const res = await apiService.createCourse({
+          title: lomda.title,
+          description: lomda.description,
+          content: lomda.content as unknown as import('../../types/course').ContentBlock[],
+          passing_score: lomda.passing_score
+        });
+        await apiService.publishCourse(res.data.data.id);
+      }
+      await queryClient.invalidateQueries({ queryKey: ['courses'] });
+      setSeedMsg(t('נוצרו 4 לומדות לדוגמה ✓', '4 sample courses created ✓'));
+    } catch {
+      setSeedMsg(t('שגיאה ביצירת הלומדות', 'Failed to create sample courses'));
+    } finally {
+      setSeeding(false);
+      setTimeout(() => setSeedMsg(''), 5000);
+    }
+  }
 
   async function handleCreate() {
     if (!newTitle.trim()) { setCreateError(t('חובה להזין שם קורס', 'Course title is required')); return; }
@@ -55,12 +81,23 @@ export default function CoursesPage() {
                    'Browse the learning library, edit with the visual builder, or create a new course.')}
               </p>
             </div>
-            <button
-              onClick={() => { setShowNew(true); setNewTitle(''); setCreateError(''); }}
-              className="rounded-xl bg-blue-600 px-4 py-2.5 text-white text-sm font-medium hover:bg-blue-700"
-            >
-              {t('+ לומדה חדשה', '+ New Course')}
-            </button>
+            <div className="flex items-center gap-2">
+              {seedMsg && <span className="text-sm text-green-600 font-medium">{seedMsg}</span>}
+              <button
+                onClick={handleSeedSamples}
+                disabled={seeding}
+                title={t('הוסף 4 לומדות לדוגמה: אבטחת מידע והטרדה מינית (עברית + אנגלית)', 'Add 4 sample courses')}
+                className="rounded-xl border border-gray-300 px-3 py-2.5 text-gray-600 text-sm hover:bg-gray-50 disabled:opacity-50"
+              >
+                {seeding ? t('יוצר...', 'Creating…') : t('📚 לומדות לדוגמה', '📚 Sample courses')}
+              </button>
+              <button
+                onClick={() => { setShowNew(true); setNewTitle(''); setCreateError(''); }}
+                className="rounded-xl bg-blue-600 px-4 py-2.5 text-white text-sm font-medium hover:bg-blue-700"
+              >
+                {t('+ לומדה חדשה', '+ New Course')}
+              </button>
+            </div>
           </div>
         </div>
 

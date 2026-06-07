@@ -15,6 +15,10 @@ export async function sendEmail(opts: EmailOptions): Promise<void> {
     console.warn(`[email] No SENDGRID_API_KEY — skipping send to ${opts.to}`);
     return;
   }
+  if (!config.email.from) {
+    console.warn(`[email] No SENDGRID_FROM_EMAIL set — skipping send to ${opts.to}. Set this env var to your verified SendGrid sender address.`);
+    return;
+  }
 
   const from = { email: config.email.from, name: config.email.fromName };
 

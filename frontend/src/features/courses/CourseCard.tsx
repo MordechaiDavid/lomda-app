@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLang } from '../../lib/i18n';
 
@@ -17,28 +16,28 @@ export function CourseCard({ id, title, description, image, onEdit, onDelete }: 
   const router = useRouter();
   const { t } = useLang();
 
-  const handleEdit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    // Navigate to the new drag-and-drop builder
-    router.push(`/dashboard/courses/${id}/edit`);
-    onEdit?.(id);
-  };
-
   return (
     <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-lg">
-      <Link href={`/courses/${id}`} className="block">
-        {/* Show main image if provided */}
-        {image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={image} alt={title} className="mb-4 h-40 w-full object-cover rounded-xl" />
-        ) : null}
-        <h2 className="text-2xl font-semibold mb-2 text-slate-900">{title}</h2>
-        <p className="text-sm leading-6 text-gray-600">{description}</p>
-        <div className="mt-4 text-blue-600 font-semibold">{t('צפה בלומדה ←', 'View course →')}</div>
-      </Link>
+      {image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={image} alt={title} className="mb-4 h-40 w-full object-cover rounded-xl" />
+      ) : null}
+      <h2 className="text-2xl font-semibold mb-2 text-slate-900">{title}</h2>
+      <p className="text-sm leading-6 text-gray-600">{description}</p>
+
       <div className="mt-4 flex gap-2 justify-start">
         <button
-          onClick={handleEdit}
+          onClick={() => router.push(`/dashboard/courses/${id}/preview`)}
+          title="הצג לומדה (תצוגה מקדימה)"
+          className="flex items-center justify-center w-8 h-8 rounded-md bg-emerald-500 text-white hover:bg-emerald-600 transition"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+        </button>
+        <button
+          onClick={() => { router.push(`/dashboard/courses/${id}/edit`); onEdit?.(id); }}
           title="ערוך קורס (בנאי גרפי)"
           className="flex items-center justify-center w-8 h-8 rounded-md bg-amber-500 text-white hover:bg-amber-600 transition"
         >
@@ -48,12 +47,7 @@ export function CourseCard({ id, title, description, image, onEdit, onDelete }: 
           </svg>
         </button>
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            if (confirm(t('למחוק קורס זה?', 'Delete this course?'))) {
-              onDelete?.(id);
-            }
-          }}
+          onClick={() => { if (confirm(t('למחוק קורס זה?', 'Delete this course?'))) onDelete?.(id); }}
           title="מחק קורס"
           className="flex items-center justify-center w-8 h-8 rounded-md bg-red-500 text-white hover:bg-red-600 transition"
         >

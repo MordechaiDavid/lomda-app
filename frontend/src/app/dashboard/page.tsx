@@ -192,7 +192,7 @@ function EnrollmentCard({ enrollment: e }: { enrollment: EnrollmentWithJoins }) 
 
         {(status === 'pending' || status === 'in_progress' || status === 'failed') && (
           <a
-            href={`/courses/${e.course_id}`}
+            href={`/dashboard/learn/${e.course_id}`}
             className="block w-full text-center py-2 rounded-xl bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors"
           >
             {status === 'in_progress' ? 'המשך' : status === 'failed' ? 'נסה שוב' : 'התחל'}

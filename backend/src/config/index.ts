@@ -47,7 +47,7 @@ export const config = {
       accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
     },
-    from: process.env.SENDGRID_FROM_EMAIL || 'noreply@lomda-app.com',
+    from: process.env.SENDGRID_FROM_EMAIL || '',
     fromName: process.env.SENDGRID_FROM_NAME || 'Lomda App'
   },
 
