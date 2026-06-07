@@ -166,7 +166,8 @@ class ApiService {
   lomdaChat = (
     messages: { role: 'user' | 'assistant'; content: string }[],
     currentSteps: CourseStep[]
-  ) => this.client.post('/ai/lomda-chat', { messages, currentSteps });
+    // LLM generation can take far longer than the default 15s — allow up to 2 min.
+  ) => this.client.post('/ai/lomda-chat', { messages, currentSteps }, { timeout: 120000 });
 
   // ─── Integrations: Microsoft Entra ID (Azure AD) ───────────────────────────
   getEntraStatus = () => this.client.get('/integrations/entra/status');
