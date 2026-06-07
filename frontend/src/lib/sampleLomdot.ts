@@ -8,37 +8,49 @@ export interface SampleLomda {
   content: CourseStep[];
 }
 
+// Replace these with your own verified YouTube video IDs before going live
+const VIDEO_SEC  = 'https://www.youtube.com/watch?v=bPVaOlJ6ln0'; // CrashCourse: Cybersecurity
+const VIDEO_HAR  = 'https://www.youtube.com/watch?v=v7iNaKhg0y4'; // UN Women: workplace safety
+
+const IMG_CYBER  = 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80';
+const IMG_LOCK   = 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&q=80';
+const IMG_OFFICE = 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&q=80';
+const IMG_TEAM   = 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&q=80';
+
 const secHe: SampleLomda = {
   title: 'אבטחת מידע',
   description: 'לומדה לעובדי הארגון בנושא אבטחת מידע, זיהוי איומי סייבר ושמירה על נכסי הארגון.',
   passing_score: 70,
   content: [
     {
-      id: 'sh-s1', title: 'מבוא לאבטחת מידע', order: 0,
+      id: 'sh-s1', title: 'מבוא לאבטחת מידע', order: 0, minTimeSeconds: 0,
       blocks: [
         { id: 'sh-s1-b1', type: 'heading', level: 1, text: 'מבוא לאבטחת מידע', align: 'right', order: 0 },
-        { id: 'sh-s1-b2', type: 'text', order: 1,
+        { id: 'sh-s1-v1', type: 'video', url: VIDEO_SEC, caption: 'צפה בסרטון ולאחר מכן המשך', autoplay: false, order: 1 },
+        { id: 'sh-s1-b2', type: 'text', order: 2,
           html: '<p>אבטחת מידע היא מכלול הפעולות, הנהלים והטכנולוגיות שמטרתן להגן על המידע הארגוני מפני גישה לא מורשית, שימוש לרעה, חשיפה, שינוי, מחיקה או שיבוש.</p><p>כל עובד בארגון הוא שחקן מפתח בשמירה על אבטחת המידע — גם אם אינו איש טכנולוגיה.</p>' }
       ]
     },
     {
-      id: 'sh-s2', title: 'איומים נפוצים', order: 1,
+      id: 'sh-s2', title: 'איומים נפוצים', order: 1, minTimeSeconds: 45,
       blocks: [
         { id: 'sh-s2-b1', type: 'heading', level: 2, text: 'איומים נפוצים בעולם הסייבר', align: 'right', order: 0 },
-        { id: 'sh-s2-b2', type: 'text', order: 1,
+        { id: 'sh-s2-i1', type: 'image', url: IMG_CYBER, alt: 'איומי סייבר', caption: 'עולם הסייבר מלא באיומים — הכר אותם', width: 'full', order: 1 },
+        { id: 'sh-s2-b2', type: 'text', order: 2,
           html: '<ul><li><strong>פישינג (Phishing)</strong> — הודעות דואר אלקטרוני או SMS מזויפות שמנסות לגרום לך ללחוץ על קישור זדוני.</li><li><strong>תוכנות כופר (Ransomware)</strong> — תוכנה שמצפינה את קבציך ותובעת תשלום לשחרורם.</li><li><strong>הנדסה חברתית</strong> — ניסיון לגרום לאדם לחשוף מידע רגיש על ידי התחזות.</li><li><strong>סיסמאות חלשות</strong> — שימוש בסיסמאות פשוטות שקל לנחש.</li></ul>' }
       ]
     },
     {
-      id: 'sh-s3', title: 'הגנה על מידע', order: 2,
+      id: 'sh-s3', title: 'הגנה על מידע', order: 2, minTimeSeconds: 45,
       blocks: [
         { id: 'sh-s3-b1', type: 'heading', level: 2, text: 'כיצד מגנים על מידע?', align: 'right', order: 0 },
         { id: 'sh-s3-b2', type: 'text', order: 1,
-          html: '<ul><li><strong>סיסמאות חזקות</strong> — לפחות 12 תווים, שילוב של אותיות, מספרים ותווים מיוחדים.</li><li><strong>אימות דו-שלבי (2FA)</strong> — הוסף שכבת אבטחה נוספת לכל חשבון.</li><li><strong>עדכוני תוכנה</strong> — עדכן מערכת הפעלה ותוכנות באופן קבוע.</li><li><strong>גיבוי נתונים</strong> — גבה קבצים חשובים לאחסון מאובטח.</li></ul>' }
+          html: '<ul><li><strong>סיסמאות חזקות</strong> — לפחות 12 תווים, שילוב של אותיות, מספרים ותווים מיוחדים.</li><li><strong>אימות דו-שלבי (2FA)</strong> — הוסף שכבת אבטחה נוספת לכל חשבון.</li><li><strong>עדכוני תוכנה</strong> — עדכן מערכת הפעלה ותוכנות באופן קבוע.</li><li><strong>גיבוי נתונים</strong> — גבה קבצים חשובים לאחסון מאובטח.</li></ul>' },
+        { id: 'sh-s3-i1', type: 'image', url: IMG_LOCK, alt: 'אבטחת סיסמאות', caption: 'סיסמה חזקה + 2FA = הגנה אמיתית', width: 'medium', order: 2 }
       ]
     },
     {
-      id: 'sh-s4', title: 'כללי זהב לעובד', order: 3,
+      id: 'sh-s4', title: 'כללי זהב לעובד', order: 3, minTimeSeconds: 30,
       blocks: [
         { id: 'sh-s4-b1', type: 'heading', level: 2, text: 'כללי הזהב של העובד המודע', align: 'right', order: 0 },
         { id: 'sh-s4-b2', type: 'text', order: 1,
@@ -80,31 +92,34 @@ const secEn: SampleLomda = {
   passing_score: 70,
   content: [
     {
-      id: 'se-s1', title: 'Introduction', order: 0,
+      id: 'se-s1', title: 'Introduction', order: 0, minTimeSeconds: 0,
       blocks: [
         { id: 'se-s1-b1', type: 'heading', level: 1, text: 'Introduction to Information Security', align: 'left', order: 0 },
-        { id: 'se-s1-b2', type: 'text', order: 1,
+        { id: 'se-s1-v1', type: 'video', url: VIDEO_SEC, caption: 'Watch the video, then continue', autoplay: false, order: 1 },
+        { id: 'se-s1-b2', type: 'text', order: 2,
           html: '<p>Information security encompasses the processes, policies, and technologies designed to protect organizational data from unauthorized access, misuse, disclosure, modification, or destruction.</p><p>Every employee plays a key role in keeping information secure — even if you are not in IT.</p>' }
       ]
     },
     {
-      id: 'se-s2', title: 'Common Cyber Threats', order: 1,
+      id: 'se-s2', title: 'Common Cyber Threats', order: 1, minTimeSeconds: 45,
       blocks: [
         { id: 'se-s2-b1', type: 'heading', level: 2, text: 'Common Cyber Threats', align: 'left', order: 0 },
-        { id: 'se-s2-b2', type: 'text', order: 1,
+        { id: 'se-s2-i1', type: 'image', url: IMG_CYBER, alt: 'Cyber threats visualization', caption: 'The cyber landscape is full of threats — know them', width: 'full', order: 1 },
+        { id: 'se-s2-b2', type: 'text', order: 2,
           html: '<ul><li><strong>Phishing</strong> — Fake emails or SMS messages that trick you into clicking a malicious link.</li><li><strong>Ransomware</strong> — Malware that encrypts your files and demands payment.</li><li><strong>Social Engineering</strong> — Manipulating people into revealing sensitive information.</li><li><strong>Weak Passwords</strong> — Simple passwords that are easy to guess or brute-force.</li></ul>' }
       ]
     },
     {
-      id: 'se-s3', title: 'Protecting Your Data', order: 2,
+      id: 'se-s3', title: 'Protecting Your Data', order: 2, minTimeSeconds: 45,
       blocks: [
         { id: 'se-s3-b1', type: 'heading', level: 2, text: 'How to Protect Information', align: 'left', order: 0 },
         { id: 'se-s3-b2', type: 'text', order: 1,
-          html: '<ul><li><strong>Strong Passwords</strong> — At least 12 characters, mixing letters, numbers, and symbols.</li><li><strong>Two-Factor Authentication (2FA)</strong> — Add an extra layer of security to every account.</li><li><strong>Software Updates</strong> — Keep your OS and applications up to date.</li><li><strong>Data Backups</strong> — Back up important files to secure storage regularly.</li></ul>' }
+          html: '<ul><li><strong>Strong Passwords</strong> — At least 12 characters, mixing letters, numbers, and symbols.</li><li><strong>Two-Factor Authentication (2FA)</strong> — Add an extra layer of security to every account.</li><li><strong>Software Updates</strong> — Keep your OS and applications up to date.</li><li><strong>Data Backups</strong> — Back up important files to secure storage regularly.</li></ul>' },
+        { id: 'se-s3-i1', type: 'image', url: IMG_LOCK, alt: 'Password security', caption: 'Strong password + 2FA = real protection', width: 'medium', order: 2 }
       ]
     },
     {
-      id: 'se-s4', title: 'Golden Rules', order: 3,
+      id: 'se-s4', title: 'Golden Rules', order: 3, minTimeSeconds: 30,
       blocks: [
         { id: 'se-s4-b1', type: 'heading', level: 2, text: 'Golden Rules for Every Employee', align: 'left', order: 0 },
         { id: 'se-s4-b2', type: 'text', order: 1,
@@ -146,31 +161,34 @@ const harHe: SampleLomda = {
   passing_score: 70,
   content: [
     {
-      id: 'hh-s1', title: 'מהי הטרדה מינית?', order: 0,
+      id: 'hh-s1', title: 'מהי הטרדה מינית?', order: 0, minTimeSeconds: 0,
       blocks: [
         { id: 'hh-s1-b1', type: 'heading', level: 1, text: 'מהי הטרדה מינית?', align: 'right', order: 0 },
-        { id: 'hh-s1-b2', type: 'text', order: 1,
+        { id: 'hh-s1-v1', type: 'video', url: VIDEO_HAR, caption: 'צפה בסרטון ולאחר מכן המשך', autoplay: false, order: 1 },
+        { id: 'hh-s1-b2', type: 'text', order: 2,
           html: '<p>חוק למניעת הטרדה מינית, התשנ"ח–1998, מגדיר הטרדה מינית כהתנהגות בעלת אופי מיני שנעשית ללא הסכמה.</p><p>הטרדה מינית פוגעת בכבוד האדם, בזכויות העובד ובסביבת העבודה כולה. היא אסורה על פי חוק וגוררת אחריות אישית.</p>' }
       ]
     },
     {
-      id: 'hh-s2', title: 'סוגי הטרדה', order: 1,
+      id: 'hh-s2', title: 'סוגי הטרדה', order: 1, minTimeSeconds: 45,
       blocks: [
         { id: 'hh-s2-b1', type: 'heading', level: 2, text: 'סוגי הטרדה מינית', align: 'right', order: 0 },
-        { id: 'hh-s2-b2', type: 'text', order: 1,
+        { id: 'hh-s2-i1', type: 'image', url: IMG_OFFICE, alt: 'סביבת עבודה מכבדת', caption: 'כל אחד זכאי לסביבת עבודה מכבדת ובטוחה', width: 'full', order: 1 },
+        { id: 'hh-s2-b2', type: 'text', order: 2,
           html: '<ul><li>הצעות מיניות חוזרות לאחר שהן נדחו.</li><li>הערות, בדיחות או ביטויים בעלי אופי מיני פוגעני.</li><li>מגע פיזי שלא ניתנה לו הסכמה.</li><li>שיתוף חומרים מיניים — תמונות, סרטונים, הודעות.</li></ul>' }
       ]
     },
     {
-      id: 'hh-s3', title: 'מה לעשות אם נפגעת?', order: 2,
+      id: 'hh-s3', title: 'מה לעשות אם נפגעת?', order: 2, minTimeSeconds: 45,
       blocks: [
         { id: 'hh-s3-b1', type: 'heading', level: 2, text: 'צעדים לנפגע/ת הטרדה', align: 'right', order: 0 },
         { id: 'hh-s3-b2', type: 'text', order: 1,
-          html: '<ol><li><strong>תעד</strong> — רשום תאריכים, שעות ותיאור מה קרה.</li><li><strong>פנה לאחראי/ת</strong> — בכל ארגון חייב להיות אחראי למניעת הטרדה מינית.</li><li><strong>הגש תלונה</strong> — אפשרי לפנות גם למשרד העבודה או לוועדת שוויון הזדמנויות.</li><li><strong>קבל תמיכה</strong> — אין צורך להתמודד לבד. פסיכולוג, עו"ד, גוף תמיכה.</li></ol>' }
+          html: '<ol><li><strong>תעד</strong> — רשום תאריכים, שעות ותיאור מה קרה.</li><li><strong>פנה לאחראי/ת</strong> — בכל ארגון חייב להיות אחראי למניעת הטרדה מינית.</li><li><strong>הגש תלונה</strong> — אפשרי לפנות גם למשרד העבודה או לוועדת שוויון הזדמנויות.</li><li><strong>קבל תמיכה</strong> — אין צורך להתמודד לבד. פסיכולוג, עו"ד, גוף תמיכה.</li></ol>' },
+        { id: 'hh-s3-i1', type: 'image', url: IMG_TEAM, alt: 'תמיכה ועזרה', caption: 'אתה לא לבד — פנה לעזרה', width: 'medium', order: 2 }
       ]
     },
     {
-      id: 'hh-s4', title: 'חובת הארגון', order: 3,
+      id: 'hh-s4', title: 'חובת הארגון', order: 3, minTimeSeconds: 30,
       blocks: [
         { id: 'hh-s4-b1', type: 'heading', level: 2, text: 'חובות הארגון לפי החוק', align: 'right', order: 0 },
         { id: 'hh-s4-b2', type: 'text', order: 1,
@@ -211,31 +229,34 @@ const harEn: SampleLomda = {
   passing_score: 70,
   content: [
     {
-      id: 'he-s1', title: 'What Is Sexual Harassment?', order: 0,
+      id: 'he-s1', title: 'What Is Sexual Harassment?', order: 0, minTimeSeconds: 0,
       blocks: [
         { id: 'he-s1-b1', type: 'heading', level: 1, text: 'What Is Sexual Harassment?', align: 'left', order: 0 },
-        { id: 'he-s1-b2', type: 'text', order: 1,
+        { id: 'he-s1-v1', type: 'video', url: VIDEO_HAR, caption: 'Watch the video, then continue', autoplay: false, order: 1 },
+        { id: 'he-s1-b2', type: 'text', order: 2,
           html: "<p>Sexual harassment is any unwanted conduct of a sexual nature that violates a person's dignity or creates an intimidating, hostile, or offensive work environment.</p><p>It is prohibited by law and carries personal legal liability.</p>" }
       ]
     },
     {
-      id: 'he-s2', title: 'Types of Harassment', order: 1,
+      id: 'he-s2', title: 'Types of Harassment', order: 1, minTimeSeconds: 45,
       blocks: [
         { id: 'he-s2-b1', type: 'heading', level: 2, text: 'Types of Sexual Harassment', align: 'left', order: 0 },
-        { id: 'he-s2-b2', type: 'text', order: 1,
+        { id: 'he-s2-i1', type: 'image', url: IMG_OFFICE, alt: 'Respectful workplace', caption: 'Everyone deserves a respectful and safe workplace', width: 'full', order: 1 },
+        { id: 'he-s2-b2', type: 'text', order: 2,
           html: '<ul><li>Repeated sexual propositions after they have been rejected.</li><li>Offensive remarks, jokes, or expressions of a sexual nature.</li><li>Unwanted physical contact.</li><li>Sharing sexual materials — images, videos, or messages.</li></ul>' }
       ]
     },
     {
-      id: 'he-s3', title: 'What To Do If Harassed', order: 2,
+      id: 'he-s3', title: 'What To Do If Harassed', order: 2, minTimeSeconds: 45,
       blocks: [
         { id: 'he-s3-b1', type: 'heading', level: 2, text: 'Steps for a Victim of Harassment', align: 'left', order: 0 },
         { id: 'he-s3-b2', type: 'text', order: 1,
-          html: "<ol><li><strong>Document</strong> — Write down dates, times, and descriptions of what happened.</li><li><strong>Report</strong> — Contact your organization's harassment prevention officer.</li><li><strong>File a complaint</strong> — You may also report to the relevant labor authority.</li><li><strong>Seek support</strong> — A counselor, lawyer, or support organization can help.</li></ol>" }
+          html: "<ol><li><strong>Document</strong> — Write down dates, times, and descriptions of what happened.</li><li><strong>Report</strong> — Contact your organization's harassment prevention officer.</li><li><strong>File a complaint</strong> — You may also report to the relevant labor authority.</li><li><strong>Seek support</strong> — A counselor, lawyer, or support organization can help.</li></ol>" },
+        { id: 'he-s3-i1', type: 'image', url: IMG_TEAM, alt: 'Support and help', caption: "You don't have to face this alone", width: 'medium', order: 2 }
       ]
     },
     {
-      id: 'he-s4', title: 'Employer Obligations', order: 3,
+      id: 'he-s4', title: 'Employer Obligations', order: 3, minTimeSeconds: 30,
       blocks: [
         { id: 'he-s4-b1', type: 'heading', level: 2, text: 'Employer Obligations Under the Law', align: 'left', order: 0 },
         { id: 'he-s4-b2', type: 'text', order: 1,

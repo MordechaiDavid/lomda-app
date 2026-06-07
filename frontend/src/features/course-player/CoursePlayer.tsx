@@ -25,15 +25,22 @@ type Phase = 'content' | 'quiz' | 'complete' | 'failed';
 
 export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep = 0, previewMode = false }: Props) {
   const router = useRouter();
+  const [isBrowserFs, setIsBrowserFs] = useState(false);
 
-  // Full-screen overlay — Esc exits
+  // Track browser fullscreen state
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') router.back();
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [router]);
+    const onChange = () => setIsBrowserFs(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  };
 
   const steps: CourseStep[] = normalizeToSteps(course.content as unknown[]);
   const contentSteps = steps.filter((s) => !s.blocks.some((b) => b.type === 'quiz'));
@@ -55,10 +62,13 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
   const minSec = currentStep?.minTimeSeconds ?? 0;
   const [elapsed, setElapsed] = useState(0);
 
+  const [videoEnded, setVideoEnded] = useState(false);
+
   // Per-step timer
   useEffect(() => {
     setElapsed(0);
     setMinTimeDone(minSec === 0);
+    setVideoEnded(false);
     const id = setInterval(() => {
       if (document.visibilityState === 'visible') {
         setElapsed((e) => {
@@ -145,17 +155,38 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
 
   if (phase === 'quiz') {
     return (
-      <div className="fixed inset-0 z-50 bg-gray-50 flex flex-col" dir="rtl">
-        <button
-          onClick={() => router.back()}
-          title="לצאת (ESC)"
-          className="absolute top-3 left-3 z-10 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/20 hover:bg-black/35 text-white text-xs font-medium transition-colors"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          ESC
-        </button>
+      <div className="fixed inset-0 z-[9999] bg-gray-50 flex flex-col" dir="rtl">
+        <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5">
+          <button
+            onClick={toggleFullscreen}
+            title={isBrowserFs ? 'צא ממסך מלא (ESC)' : 'מסך מלא'}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-black/20 hover:bg-black/35 text-white text-xs font-medium transition-colors"
+          >
+            {isBrowserFs ? (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 9L4 4m0 0l5 0m-5 0l0 5M15 9l5-5m0 0l-5 0m5 0l0 5M9 15l-5 5m0 0l5 0m-5 0l0-5M15 15l5 5m0 0l-5 0m5 0l0-5" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5" />
+              </svg>
+            )}
+            {isBrowserFs ? 'ESC' : 'מסך מלא'}
+          </button>
+          <button
+            onClick={() => {
+              if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+              router.back();
+            }}
+            title="יציאה"
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-black/20 hover:bg-black/35 text-white text-xs font-medium transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            יציאה
+          </button>
+        </div>
         {previewMode && (
           <div className="bg-amber-400 text-amber-900 text-xs font-semibold text-center py-1.5 px-4 flex-shrink-0">
             👁 תצוגה מקדימה — כך ייראה המשתמש | הנתונים לא נשמרים
@@ -179,22 +210,44 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
   }
 
   const remaining = Math.max(0, minSec - elapsed);
-  const canAdvance = minTimeDone;
+  const stepHasVideo = (currentStep?.blocks ?? []).some((b) => b.type === 'video');
+  const canAdvance = minTimeDone && (!stepHasVideo || videoEnded);
   const totalSteps = contentSteps.length + (hasQuiz ? 1 : 0);
 
   return (
-    <div className="fixed inset-0 z-50 bg-gray-50 flex flex-col" dir="rtl">
-      {/* Esc hint */}
-      <button
-        onClick={() => router.back()}
-        title="לצאת (ESC)"
-        className="absolute top-3 left-3 z-10 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/20 hover:bg-black/35 text-white text-xs font-medium transition-colors"
-      >
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-        ESC
-      </button>
+    <div className="fixed inset-0 z-[9999] bg-gray-50 flex flex-col" dir="rtl">
+      {/* Top-left controls: fullscreen toggle + exit */}
+      <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5">
+        <button
+          onClick={toggleFullscreen}
+          title={isBrowserFs ? 'צא ממסך מלא (ESC)' : 'מסך מלא'}
+          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-black/20 hover:bg-black/35 text-white text-xs font-medium transition-colors"
+        >
+          {isBrowserFs ? (
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 9L4 4m0 0l5 0m-5 0l0 5M15 9l5-5m0 0l-5 0m5 0l0 5M9 15l-5 5m0 0l5 0m-5 0l0-5M15 15l5 5m0 0l-5 0m5 0l0-5" />
+            </svg>
+          ) : (
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5" />
+            </svg>
+          )}
+          {isBrowserFs ? 'ESC' : 'מסך מלא'}
+        </button>
+        <button
+          onClick={() => {
+            if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+            router.back();
+          }}
+          title="יציאה"
+          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-black/20 hover:bg-black/35 text-white text-xs font-medium transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          יציאה
+        </button>
+      </div>
 
       {previewMode && (
         <div className="bg-amber-400 text-amber-900 text-xs font-semibold text-center py-1.5 px-4 flex-shrink-0">
@@ -215,7 +268,11 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
           {(currentStep?.blocks ?? []).map((block) => (
-            <BlockRenderer key={block.id} block={block} />
+            <BlockRenderer
+              key={block.id}
+              block={block}
+              onVideoEnd={block.type === 'video' ? () => setVideoEnded(true) : undefined}
+            />
           ))}
         </div>
       </div>
@@ -236,9 +293,14 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
             הקודם
           </button>
 
-          {/* Center: countdown OR step label */}
+          {/* Center: video lock / countdown / step label */}
           <div className="flex flex-col items-center gap-1">
-            {!canAdvance && minSec > 0 ? (
+            {stepHasVideo && !videoEnded ? (
+              <div className="text-center">
+                <p className="text-xs font-semibold text-blue-600 animate-pulse">▶ צפה בסרטון להמשך</p>
+                <p className="text-xs text-gray-400">הכפתור יפתח בסיום הסרטון</p>
+              </div>
+            ) : !canAdvance && minSec > 0 ? (
               <CountdownTimer remaining={remaining} total={minSec} />
             ) : (
               <div className="text-center">
@@ -419,7 +481,7 @@ function StepProgressBar({
 }
 
 // ─── Block renderer ───────────────────────────────────────────────────────────
-function BlockRenderer({ block }: { block: ContentBlock }) {
+function BlockRenderer({ block, onVideoEnd }: { block: ContentBlock; onVideoEnd?: () => void }) {
   switch (block.type) {
     case 'heading': {
       const b = block as HeadingBlock;
@@ -455,8 +517,10 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
       return (
         <div className="rounded-xl overflow-hidden shadow-sm bg-black">
           <ReactPlayer url={b.url} width="100%" height="360px" controls={true}
+            playing={b.autoplay ?? false}
+            onEnded={onVideoEnd}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            playing={b.autoplay ?? false} {...({ config: { youtube: { playerVars: { rel: 0 } } } } as any)} />
+            {...({ config: { youtube: { playerVars: { rel: 0 } } } } as any)} />
           {b.caption && <p className="text-xs text-gray-500 text-center py-2 bg-gray-50">{b.caption}</p>}
         </div>
       );

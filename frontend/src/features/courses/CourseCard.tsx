@@ -27,7 +27,10 @@ export function CourseCard({ id, title, description, image, onEdit, onDelete }: 
 
       <div className="mt-4 flex gap-2 justify-start">
         <button
-          onClick={() => router.push(`/dashboard/courses/${id}/preview`)}
+          onClick={() => {
+            document.documentElement.requestFullscreen().catch(() => {});
+            router.push(`/dashboard/courses/${id}/preview`);
+          }}
           title="הצג לומדה (תצוגה מקדימה)"
           className="flex items-center justify-center w-8 h-8 rounded-md bg-emerald-500 text-white hover:bg-emerald-600 transition"
         >
