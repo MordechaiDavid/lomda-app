@@ -16,13 +16,32 @@ export async function sendEmail(opts: EmailOptions): Promise<void> {
     return;
   }
 
-  await sgMail.send({
-    to: opts.to,
-    from: { email: config.email.from, name: config.email.fromName },
-    subject: opts.subject,
-    html: opts.html,
-    text: opts.text ?? opts.html.replace(/<[^>]+>/g, '')
-  });
+  const from = { email: config.email.from, name: config.email.fromName };
+
+  try {
+    await sgMail.send({
+      to: opts.to,
+      from,
+      subject: opts.subject,
+      html: opts.html,
+      text: opts.text ?? opts.html.replace(/<[^>]+>/g, '')
+    });
+  } catch (err: unknown) {
+    const sgErr = err as {
+      message?: string;
+      response?: { status?: number; body?: unknown };
+    };
+
+    console.error('[email] SendGrid error sending email:', {
+      to: opts.to,
+      from: from.email,
+      message: sgErr.message,
+      statusCode: sgErr.response?.status,
+      body: JSON.stringify(sgErr.response?.body, null, 2)
+    });
+
+    throw err;
+  }
 }
 
 export function buildCampaignEmail(opts: {
