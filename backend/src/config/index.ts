@@ -51,6 +51,18 @@ export const config = {
     fromName: process.env.SENDGRID_FROM_NAME || 'Lomda App'
   },
 
+  // Microsoft Entra ID (Azure AD) — single-org POC values, read from .env.
+  // Long-term these live per-organization in the `organizations` table.
+  entra: {
+    tenantId: process.env.ENTRA_TENANT_ID || '',
+    clientId: process.env.ENTRA_CLIENT_ID || '',
+    clientSecret: process.env.ENTRA_CLIENT_SECRET || '',
+    // DEV ONLY: when 'true', sync returns sample employees without calling Microsoft Graph,
+    // so you can exercise the whole feature before a real Entra tenant is wired up.
+    // Remove ENTRA_MOCK (or set it to anything but 'true') once real credentials are in place.
+    mock: process.env.ENTRA_MOCK === 'true'
+  },
+
   // Security
   security: {
     encryptionKey: process.env.ENCRYPTION_KEY || 'default-encryption-key',

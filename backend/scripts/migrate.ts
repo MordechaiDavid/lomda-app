@@ -163,6 +163,44 @@ async function migrate() {
   `);
   console.log('✓ campaign_recipients table');
 
+  // organizations — one row per customer tenant (multi-tenant groundwork)
+  await query(`
+    CREATE TABLE IF NOT EXISTS organizations (
+      id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name                    TEXT NOT NULL,
+      entra_tenant_id         TEXT,
+      entra_client_id         TEXT,
+      entra_client_secret_enc TEXT,
+      sync_enabled            BOOLEAN NOT NULL DEFAULT false,
+      last_synced_at          TIMESTAMPTZ,
+      created_at              TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  console.log('✓ organizations table');
+
+  // users — external-identity / multi-tenant columns + nullable password (AD users have none)
+  await query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='organization_id') THEN
+        ALTER TABLE users ADD COLUMN organization_id UUID REFERENCES organizations(id);
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='entra_object_id') THEN
+        ALTER TABLE users ADD COLUMN entra_object_id TEXT;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='auth_provider') THEN
+        ALTER TABLE users ADD COLUMN auth_provider TEXT NOT NULL DEFAULT 'local';
+      END IF;
+    END $$
+  `);
+  await query(`ALTER TABLE users ALTER COLUMN password DROP NOT NULL`);
+  await query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS users_org_entra_object_id_key
+    ON users (organization_id, entra_object_id)
+    WHERE entra_object_id IS NOT NULL
+  `);
+  console.log('✓ users external-identity columns');
+
   await pool.end();
   console.log('Migrations complete.');
 }

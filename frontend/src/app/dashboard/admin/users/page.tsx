@@ -41,6 +41,27 @@ export default function AdminUsersPage() {
     },
   });
 
+  const { data: entraStatus } = useQuery({
+    queryKey: ['entraStatus'],
+    queryFn: () => apiService.getEntraStatus().then((res) => res.data.data),
+    retry: false,
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: () => apiService.syncEntraUsers().then((res) => res.data.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['entraStatus'] });
+    },
+  });
+
+  const syncResult = syncMutation.data as
+    | { created: number; updated: number; deactivated: number }
+    | undefined;
+  const syncError = syncMutation.error
+    ? ((syncMutation.error as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ?? 'הסנכרון נכשל.')
+    : null;
+
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
     setPage(1);
@@ -72,13 +93,40 @@ export default function AdminUsersPage() {
             <h1 className="text-2xl font-semibold text-slate-900">ניהול משתמשים</h1>
             <p className="mt-1 text-sm text-slate-500">סה&quot;כ {total} משתמשים</p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
-          >
-            + הוסף משתמש
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => syncMutation.mutate()}
+              disabled={syncMutation.isPending || !entraStatus?.configured}
+              className="inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+              title={
+                !entraStatus?.configured
+                  ? 'יש להגדיר תחילה את פרטי Microsoft Entra (ראה docs/ENTRA_SETUP.md)'
+                  : entraStatus?.lastSyncedAt
+                    ? `סונכרן לאחרונה: ${new Date(entraStatus.lastSyncedAt).toLocaleString('he-IL')}`
+                    : 'טרם סונכרן'
+              }
+            >
+              {syncMutation.isPending ? 'מסנכרן...' : '⟳ סנכרן מ-Microsoft Entra'}
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              + הוסף משתמש
+            </button>
+          </div>
         </div>
+
+        {syncResult && (
+          <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+            הסנכרון הושלם: {syncResult.created} נוספו, {syncResult.updated} עודכנו, {syncResult.deactivated} הושבתו.
+          </div>
+        )}
+        {syncError && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {syncError}
+          </div>
+        )}
 
         <form onSubmit={handleSearchSubmit} className="mb-4 flex gap-2">
           <input
