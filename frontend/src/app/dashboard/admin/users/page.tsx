@@ -59,7 +59,7 @@ export default function AdminUsersPage() {
     : null;
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-10 sm:px-10">
+    <main className="min-h-screen bg-slate-50 px-6 py-10 sm:px-10" dir="rtl">
       <div className="mx-auto max-w-5xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
@@ -67,16 +67,16 @@ export default function AdminUsersPage() {
               onClick={() => router.push('/dashboard')}
               className="text-sm text-slate-500 hover:text-slate-700 mb-1"
             >
-              ← Back to dashboard
+              ← חזרה לדשבורד
             </button>
-            <h1 className="text-2xl font-semibold text-slate-900">User Management</h1>
-            <p className="mt-1 text-sm text-slate-500">{total} user{total !== 1 ? 's' : ''} total</p>
+            <h1 className="text-2xl font-semibold text-slate-900">ניהול משתמשים</h1>
+            <p className="mt-1 text-sm text-slate-500">סה&quot;כ {total} משתמשים</p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
             className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
           >
-            + Add User
+            + הוסף משתמש
           </button>
         </div>
 
@@ -84,14 +84,14 @@ export default function AdminUsersPage() {
           <input
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search by name or email…"
+            placeholder="חיפוש לפי שם או מייל..."
             className="flex-1 rounded-xl border bg-white px-4 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="submit"
             className="rounded-xl border bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
           >
-            Search
+            חפש
           </button>
           {search && (
             <button
@@ -99,7 +99,7 @@ export default function AdminUsersPage() {
               onClick={() => { setSearchInput(''); setSearch(''); setPage(1); }}
               className="rounded-xl border bg-white px-4 py-2.5 text-sm font-medium text-gray-500 shadow-sm hover:bg-gray-50"
             >
-              Clear
+              נקה
             </button>
           )}
         </form>
@@ -112,7 +112,7 @@ export default function AdminUsersPage() {
 
         {isLoading ? (
           <div className="rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">
-            Loading users…
+            טוען משתמשים...
           </div>
         ) : (
           <UserTable
@@ -125,21 +125,21 @@ export default function AdminUsersPage() {
 
         {totalPages > 1 && (
           <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
-            <span>Page {page} of {totalPages}</span>
+            <span>עמוד {page} מתוך {totalPages}</span>
             <div className="flex gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
                 className="rounded-lg border px-3 py-1.5 hover:bg-gray-50 disabled:opacity-40"
               >
-                Previous
+                הקודם
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
                 className="rounded-lg border px-3 py-1.5 hover:bg-gray-50 disabled:opacity-40"
               >
-                Next
+                הבא
               </button>
             </div>
           </div>

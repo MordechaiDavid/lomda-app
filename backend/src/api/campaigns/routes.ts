@@ -238,11 +238,13 @@ router.get('/:id/analytics', requireTrainer, async (req: Request, res: Response)
        COUNT(*) FILTER (WHERE status IN ('pending','sent'))   AS not_started,
        ROUND(AVG(score) FILTER (WHERE score IS NOT NULL), 1)  AS avg_score,
        ROUND(100.0 * COUNT(*) FILTER (WHERE status = 'completed') / NULLIF(COUNT(*), 0), 1) AS completion_rate,
-       ROUND(100.0 * COUNT(*) FILTER (WHERE passed_score) / NULLIF(COUNT(*) FILTER (WHERE score IS NOT NULL), 0), 1) AS pass_rate
-     FROM campaign_recipients cr
-     LEFT JOIN campaigns camp ON camp.id = cr.campaign_id
-     CROSS JOIN LATERAL (SELECT cr.score >= camp.passing_score AS passed_score) ps
-     WHERE cr.campaign_id = $1`,
+       ROUND(
+         100.0 * COUNT(*) FILTER (WHERE score >= (SELECT passing_score FROM campaigns WHERE id = $1))
+         / NULLIF(COUNT(*) FILTER (WHERE score IS NOT NULL), 0),
+         1
+       ) AS pass_rate
+     FROM campaign_recipients
+     WHERE campaign_id = $1`,
     [req.params.id]
   );
 

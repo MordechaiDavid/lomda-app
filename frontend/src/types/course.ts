@@ -77,6 +77,17 @@ export type ContentBlock =
   | QuizBlock
   | DividerBlock;
 
+// ─── Step (slide) model ───────────────────────────────────────────────────
+
+export interface CourseStep {
+  id: string;
+  title: string;
+  order: number;
+  blocks: ContentBlock[];
+  /** Minimum seconds the learner must spend on this step before advancing */
+  minTimeSeconds?: number;
+}
+
 // ─── Course model ──────────────────────────────────────────────────────────
 
 export interface Course {
