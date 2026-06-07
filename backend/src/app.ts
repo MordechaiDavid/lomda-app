@@ -19,6 +19,7 @@ import userRoutes from './api/users/routes.js';
 import enrollmentRoutes from './api/enrollments/routes.js';
 import learnRoutes from './api/learn/routes.js';
 import integrationRoutes from './api/integrations/routes.js';
+import aiRoutes from './api/ai/routes.js';
 
 const logger = pino();
 
@@ -59,6 +60,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/enrollments', enrollmentRoutes);
 app.use('/api/v1/learn', learnRoutes);
 app.use('/api/v1/integrations', integrationRoutes);
+app.use('/api/v1/ai', aiRoutes);
 
 app.use((_req: Request, res: Response) => {
   res.status(404).json({

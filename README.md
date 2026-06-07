@@ -22,6 +22,7 @@ Lomda App is a **B2B SaaS platform** that enables organizations to:
 
 ### 🛠️ Admin Dashboard
 - **No-Code Course Authoring**: Drag-and-drop course builder
+- **AI Course Assistant**: Build a lomda from a natural-language prompt — Claude proposes steps & blocks straight into the drag-and-drop canvas (requires `ANTHROPIC_API_KEY`, see below)
 - **User Management**: Bulk upload employees (Excel/CSV)
 - **Email Campaign Manager**: Schedule and distribute courses
 - **Auto-Reminders**: Automated follow-ups for non-engagement
@@ -175,6 +176,20 @@ docker-compose up -d
 npm run db:migrate
 ```
 
+#### AI Course Assistant environment variables
+
+The in-builder AI assistant (✨ עוזר AI) calls the Anthropic API server-side. Set these on the
+**backend** service only — the key is never exposed to the frontend.
+
+| Variable | Required | Default | Notes |
+|----------|----------|---------|-------|
+| `ANTHROPIC_API_KEY` | Yes (for the assistant) | — | Your Claude API key (`sk-ant-...`). Without it the panel shows a clean "AI not configured" message. |
+| `AI_MODEL` | No | `claude-haiku-4-5` | Set to `claude-sonnet-4-6` for higher-quality drafts. |
+| `AI_MAX_TOKENS` | No | `4096` | Max output tokens per generation. |
+
+Locally: add `ANTHROPIC_API_KEY` to `backend/.env`.
+On Railway: add it to the `lomda-app-mms` service → **Variables**, then redeploy.
+
 6. **Start development servers**
 ```bash
 # Terminal 1: Backend
@@ -249,7 +264,7 @@ Key tables:
 ## Deployment
 
 ### Production Checklist
-- [ ] Environment variables configured
+- [ ] Environment variables configured (incl. `ANTHROPIC_API_KEY` on the backend for the AI assistant)
 - [ ] SSL certificates installed
 - [ ] Database backed up
 - [ ] Redis persistence enabled
