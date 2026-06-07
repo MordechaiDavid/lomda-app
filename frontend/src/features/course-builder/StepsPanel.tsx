@@ -1,5 +1,6 @@
 'use client';
 
+import { useDraggable } from '@dnd-kit/core';
 import type { CourseStep, BlockType } from '../../types/course';
 
 interface Props {
@@ -35,19 +36,19 @@ export function StepsPanel({
   return (
     <aside className="w-56 flex-shrink-0 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
 
-      {/* Block palette — TOP, prominent */}
+      {/* Block palette — TOP, prominent, draggable */}
       <div className="px-3 pt-3 pb-2 border-b border-gray-200 bg-white flex-shrink-0">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">הוסף רכיב לשלב</p>
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">גרור או לחץ להוספה</p>
+        <p className="text-xs text-gray-400 mb-2">גרור לאזור הקנבס</p>
         <div className="grid grid-cols-3 gap-1.5">
           {BLOCK_TYPES.map((b) => (
-            <button
+            <DraggableBlockButton
               key={b.type}
+              type={b.type}
+              label={b.label}
+              icon={b.icon}
               onClick={() => onAddBlock(b.type)}
-              className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-blue-700 text-gray-600 transition-colors border border-gray-200 hover:border-blue-300"
-            >
-              <span className="text-xl leading-none">{b.icon}</span>
-              <span className="text-xs leading-tight font-medium">{b.label}</span>
-            </button>
+            />
           ))}
         </div>
       </div>
@@ -82,6 +83,32 @@ export function StepsPanel({
         </div>
       </div>
     </aside>
+  );
+}
+
+function DraggableBlockButton({
+  type, label, icon, onClick
+}: { type: BlockType; label: string; icon: string; onClick: () => void }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `palette-${type}`,
+    data: { isPalette: true, blockType: type }
+  });
+
+  return (
+    <button
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      onClick={onClick}
+      className={`flex flex-col items-center gap-1 py-2 px-1 rounded-xl bg-gray-50 text-gray-600 transition-all border cursor-grab active:cursor-grabbing select-none
+        ${isDragging
+          ? 'opacity-50 scale-95 border-blue-400 bg-blue-50'
+          : 'hover:bg-blue-50 hover:text-blue-700 border-gray-200 hover:border-blue-300 hover:shadow-sm'
+        }`}
+    >
+      <span className="text-xl leading-none">{icon}</span>
+      <span className="text-xs leading-tight font-medium">{label}</span>
+    </button>
   );
 }
 

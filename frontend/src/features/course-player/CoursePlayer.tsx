@@ -136,12 +136,13 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
 
   const remaining = Math.max(0, minSec - elapsed);
   const canAdvance = minTimeDone;
+  const totalSteps = contentSteps.length + (hasQuiz ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col" dir="rtl">
       <StepProgressBar
         currentStep={stepIdx + 1}
-        totalSteps={contentSteps.length + (hasQuiz ? 1 : 0)}
+        totalSteps={totalSteps}
         stepTitle={currentStep?.title}
         course={course}
         onStepClick={(i) => i < stepIdx && setStepIdx(i)}
@@ -159,37 +160,116 @@ export function CoursePlayer({ course, enrollmentId, campaignToken, initialStep 
       </div>
 
       {/* Navigation footer */}
-      <footer className="bg-white border-t border-gray-200 px-4 py-3 flex-shrink-0">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
+      <footer className="bg-white border-t border-gray-200 px-4 py-4 flex-shrink-0 shadow-[0_-2px_12px_rgba(0,0,0,.06)]">
+        <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
+
+          {/* Previous button */}
           <button
             onClick={handlePrev}
             disabled={stepIdx === 0}
-            className="px-5 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl border-2 border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
           >
-            ← הקודם
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+            הקודם
           </button>
 
-          <div className="text-center">
+          {/* Center: countdown OR step label */}
+          <div className="flex flex-col items-center gap-1">
             {!canAdvance && minSec > 0 ? (
-              <span className="text-sm text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full">
-                ⏱ עוד {remaining} שניות
-              </span>
+              <CountdownTimer remaining={remaining} total={minSec} />
             ) : (
-              <span className="text-xs text-gray-400">
-                שלב {stepIdx + 1} מתוך {contentSteps.length + (hasQuiz ? 1 : 0)}
-              </span>
+              <div className="text-center">
+                <p className="text-xs font-medium text-gray-500">
+                  שלב {stepIdx + 1} מתוך {totalSteps}</p>
+                <p className="text-xs text-gray-400 truncate max-w-xs">{currentStep?.title}</p>
+              </div>
             )}
           </div>
 
+          {/* Next / Finish button */}
           <button
             onClick={handleNext}
             disabled={!canAdvance}
-            className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-semibold transition-all shadow-sm ${
+              canAdvance
+                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200 hover:shadow-blue-300 hover:shadow-md'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
           >
-            {isLastStep ? (hasQuiz ? 'לשאלון →' : 'סיים') : 'הבא →'}
+            {isLastStep ? (hasQuiz ? 'לשאלון' : 'סיים') : 'הבא'}
+            {!isLastStep && (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            )}
           </button>
         </div>
       </footer>
+
+      {/* Floating step indicator (mobile-friendly) */}
+      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-30 sm:hidden">
+        <div className="flex gap-1.5 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1.5 shadow border border-gray-200">
+          {Array.from({ length: totalSteps }).map((_, i) => (
+            <div
+              key={i}
+              className={`w-2 h-2 rounded-full transition-all ${
+                i === stepIdx
+                  ? 'bg-blue-600 w-4'
+                  : i < stepIdx
+                  ? 'bg-blue-300'
+                  : 'bg-gray-200'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+// ─── Circular countdown timer ─────────────────────────────────────────────────
+function CountdownTimer({ remaining, total }: { remaining: number; total: number }) {
+  const size = 56;
+  const stroke = 4;
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+  const progress = total > 0 ? remaining / total : 0;
+  const dashOffset = circ * (1 - progress);
+
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  const label = mins > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : `${secs}`;
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div className="relative" style={{ width: size, height: size }}>
+        {/* Background ring */}
+        <svg width={size} height={size} className="rotate-[-90deg]">
+          <circle
+            cx={size / 2} cy={size / 2} r={r}
+            fill="none" stroke="#e5e7eb" strokeWidth={stroke}
+          />
+          {/* Progress ring */}
+          <circle
+            cx={size / 2} cy={size / 2} r={r}
+            fill="none"
+            stroke={progress < 0.25 ? '#ef4444' : progress < 0.5 ? '#f59e0b' : '#3b82f6'}
+            strokeWidth={stroke}
+            strokeLinecap="round"
+            strokeDasharray={circ}
+            strokeDashoffset={dashOffset}
+            style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s' }}
+          />
+        </svg>
+        {/* Countdown number */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-sm font-bold text-gray-700 tabular-nums">{label}</span>
+        </div>
+      </div>
+      <p className="text-xs text-gray-500">שניות לפני המשך</p>
     </div>
   );
 }
