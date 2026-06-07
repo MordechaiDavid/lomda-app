@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import type { ContentBlock } from '../types/course';
+import type { ContentBlock, CourseStep } from '../types/course';
 
 function resolveApiBaseUrl() {
   const envUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -161,6 +161,12 @@ class ApiService {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   };
+
+  // ─── AI: lomda chatbot ─────────────────────────────────────────────────────
+  lomdaChat = (
+    messages: { role: 'user' | 'assistant'; content: string }[],
+    currentSteps: CourseStep[]
+  ) => this.client.post('/ai/lomda-chat', { messages, currentSteps });
 
   // ─── Integrations: Microsoft Entra ID (Azure AD) ───────────────────────────
   getEntraStatus = () => this.client.get('/integrations/entra/status');

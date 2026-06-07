@@ -63,6 +63,14 @@ export const config = {
     mock: process.env.ENTRA_MOCK === 'true'
   },
 
+  // AI (Anthropic Claude) — powers the in-builder lomda chatbot.
+  ai: {
+    anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
+    // Cheap default that fits the small stack; set AI_MODEL=claude-sonnet-4-6 for higher-quality drafts.
+    model: process.env.AI_MODEL || 'claude-haiku-4-5',
+    maxTokens: parseInt(process.env.AI_MAX_TOKENS || '4096', 10)
+  },
+
   // Security
   security: {
     encryptionKey: process.env.ENCRYPTION_KEY || 'default-encryption-key',

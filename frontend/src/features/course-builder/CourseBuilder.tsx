@@ -15,7 +15,8 @@ import type { ContentBlock, BlockType, Course, CourseStep } from '../../types/co
 import { StepsPanel } from './StepsPanel';
 import { CourseCanvas } from './CourseCanvas';
 import { PropertiesPanel } from './PropertiesPanel';
-import { createDefaultBlock, createDefaultStep, normalizeToSteps } from './utils';
+import { AiChatPanel, type ApplyMode } from './AiChatPanel';
+import { createDefaultBlock, createDefaultStep, normalizeToSteps, hydrateAiSteps } from './utils';
 import { apiService } from '../../lib/apiService';
 
 interface Props {
@@ -29,6 +30,7 @@ export function CourseBuilder({ course, onSaved }: Props) {
   );
   const [activeStepIdx, setActiveStepIdx] = useState(0);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
 
   const [courseSettings, setCourseSettings] = useState({
     passing_score: course.passing_score ?? 70,
@@ -116,6 +118,23 @@ export function CourseBuilder({ course, onSaved }: Props) {
     if (selectedBlockId === id) setSelectedBlockId(null);
   }, [updateActiveStep, selectedBlockId]);
 
+  // ── AI proposal application ─────────────────────────────────────────────────
+  const applyProposal = useCallback((rawSteps: unknown[], mode: ApplyMode) => {
+    const hydrated = hydrateAiSteps(rawSteps);
+    if (hydrated.length === 0) return;
+    setSelectedBlockId(null);
+    if (mode === 'replace') {
+      setSteps(hydrated.map((s, i) => ({ ...s, order: i })));
+      setActiveStepIdx(0);
+    } else {
+      setSteps((prev) => {
+        const firstNewIdx = prev.length;
+        setActiveStepIdx(firstNewIdx);
+        return [...prev, ...hydrated].map((s, i) => ({ ...s, order: i }));
+      });
+    }
+  }, []);
+
   // ── Save / Publish ────────────────────────────────────────────────────────
   const save = async () => {
     setSaving(true);
@@ -173,6 +192,18 @@ export function CourseBuilder({ course, onSaved }: Props) {
         </div>
         <div className="flex items-center gap-2">
           {saveMsg && <span className="text-sm text-gray-500">{saveMsg}</span>}
+          <button
+            onClick={() => setAiOpen((v) => !v)}
+            title="עוזר AI לבניית לומדה"
+            className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border transition-colors ${
+              aiOpen
+                ? 'border-blue-400 bg-blue-50 text-blue-700'
+                : 'border-purple-300 text-purple-700 hover:bg-purple-50'
+            }`}
+          >
+            <span>✨</span>
+            עוזר AI
+          </button>
           <button
             onClick={() => window.open(`/dashboard/courses/${course.id}/preview`, '_blank')}
             title="הצג לומדה (תצוגה מקדימה)"
@@ -267,6 +298,14 @@ export function CourseBuilder({ course, onSaved }: Props) {
               setCourseSettings((prev) => ({ ...prev, [key]: value }))
             }
           />
+
+          {aiOpen && (
+            <AiChatPanel
+              currentSteps={steps}
+              onApplyProposal={applyProposal}
+              onClose={() => setAiOpen(false)}
+            />
+          )}
         </div>
         <DragOverlay>
           <div className="bg-blue-100 border-2 border-blue-400 rounded-lg px-4 py-2 text-sm text-blue-700 shadow-lg">
