@@ -6,7 +6,7 @@ function resolveApiBaseUrl() {
   const normalizedUrl = envUrl.replace(/\/+$/, '');
   return normalizedUrl.endsWith('/api/v1') ? normalizedUrl : `${normalizedUrl}/api/v1`;
 }
-
+// test
 class ApiService {
   private client: AxiosInstance;
 
